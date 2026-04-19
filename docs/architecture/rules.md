@@ -30,12 +30,7 @@ These rules are strict and mandatory across all services. Violating these rules 
 * **Why It's Non-Negotiable:** Unversioned APIs mean that a simple change made by the Course team can silently break the API Gateway, frontend applications, or downstream services.
 * **Implementation:** Use the `Microsoft.AspNetCore.Mvc.Versioning` package. Default to v1 if unspecified, but enforce explicit versioning for all new endpoints.
 
-### 5. All Services Must Expose a `/health` Endpoint
-* **The Rule:** Every ASP.NET Core service must implement the standard health check middleware.
-* **Why It's Non-Negotiable:** Our infrastructure (Docker Compose locally, Kubernetes in production) relies on these endpoints to know if a container is ready to receive traffic or if it needs to be restarted.
-* **Implementation:** Use `app.UseHealthChecks("/health")`. Include checks for your specific database and your Kafka connection status using `AspNetCore.Diagnostics.HealthChecks`.
-
-### 6. Authentication is Validated at the Gateway Only
+### 5. Authentication is Validated at the Gateway Only
 * **The Rule:** Downstream microservices do not validate JWTs, verify signatures, or handle OAuth flows.
 * **Why It's Non-Negotiable:** If every service re-implements JWT validation differently, we introduce a massive security risk and create redundant processing overhead.
 * **Implementation:** The API Gateway (e.g., Ocelot, YARP, or an external gateway) authenticates the user. It then strips the token and passes the validated claims to the downstream services via secure HTTP headers (e.g., `X-User-Id`, `X-User-Roles`).
