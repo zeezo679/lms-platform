@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/LMS.Common/LMS.Common.csproj" />
+    <Project Path="src/BuildingBlocks/LMS.Contracts/LMS.Contracts.csproj" />
+    <Project Path="src/BuildingBlocks/LMS.EventBus/LMS.EventBus.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Auth/">
+    <Project Path="src/Services/Auth/LMS.Auth.API/LMS.Auth.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Course/">
+    <Project Path="src/Services/Course/LMS.Course.API/LMS.Course.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Enrollment/">
+    <Project Path="src/Services/Enrollment/LMS.Enrollment.API/LMS.Enrollment.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Upload/">
+    <Project Path="src/Services/Upload/LMS.Upload.API/LMS.Upload.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/User/">
+    <Project Path="src/Services/User/LMS.User.API/LMS.User.API.csproj" />
+  </Folder>
+</Solution>
