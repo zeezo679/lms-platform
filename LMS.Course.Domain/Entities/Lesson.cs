@@ -1,17 +1,18 @@
 ﻿using LMS.Common.Entities;
+using LMS.Course.Domain.Enums;
 using LMS.Course.Domain.Errors;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LMS.Course.Domain.Enums
+namespace LMS.Course.Domain.Entities
 {
     public class Lesson: BaseEntity
     {
         private Lesson() { }
 
         public Guid SectionId { get; private set; }
-        public string Title { get; private set; }
+        public string Title { get; private set; } = string.Empty;
         public string? Description { get; private set; }
         public LessonType Type { get; private set; }
         public string? ContentUrl { get; private set; }  // video/pdf/external link

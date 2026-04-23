@@ -6,15 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LMS.Course.Domain.Enums
+namespace LMS.Course.Domain.Entities
 {
-    public sealed class Course: AuditableEntity
+    public sealed class CourseEntity: AuditableEntity
     {
-        private readonly List<Section> _sections = new List<Section>();
 
         // Private Contructor use factory method to create course
-        private Course() { }
+        private CourseEntity() { }
 
+        private readonly List<Section> _sections = [];
         public string Title { get; private set; } = string.Empty;
         public string Description { get; private set; } = string.Empty;
         public string? ThumbnailUrl { get; private set; }
@@ -31,7 +31,7 @@ namespace LMS.Course.Domain.Enums
 
 
         // Factor Method to create course
-        public static Result<Course> Create(
+        public static Result<CourseEntity> Create(
             string title,
             string description,
             Guid instructorId,
@@ -41,18 +41,18 @@ namespace LMS.Course.Domain.Enums
             string? category = null)
         {
             if (string.IsNullOrWhiteSpace(title))
-                return Result<Course>.Failure(CourseErrors.TitleRequired);
+                return Result<CourseEntity>.Failure(CourseErrors.TitleRequired);
 
             if (string.IsNullOrWhiteSpace(description))
-                return Result<Course>.Failure(CourseErrors.DescriptionRequired);
+                return Result<CourseEntity>.Failure(CourseErrors.DescriptionRequired);
 
             if (price < 0)
-                return Result<Course>.Failure(CourseErrors.InvalidPrice);
+                return Result<CourseEntity>.Failure(CourseErrors.InvalidPrice);
 
             if (instructorId == Guid.Empty)
-                return Result<Course>.Failure(CourseErrors.InvalidInstructor);
+                return Result<CourseEntity>.Failure(CourseErrors.InvalidInstructor);
 
-            var course = new Course
+            var course = new CourseEntity
             {
                 Title = title,
                 Description = description.Trim(),
@@ -66,7 +66,7 @@ namespace LMS.Course.Domain.Enums
 
             course._domainEvents.Add(new CourseCreatedEvent(course.Id, course.InstructorId, course.Title));
 
-            return Result<Course>.Success(course);
+            return Result<CourseEntity>.Success(course);
         }
 
         public Result Update(
@@ -137,9 +137,84 @@ namespace LMS.Course.Domain.Enums
             if (string.IsNullOrWhiteSpace(title))
                 return Result.Failure(CourseErrors.SectionTitleRequired);
 
+            if (_sections.Any(s => s.Order == order))
+                return Result.Failure(CourseErrors.DuplicateSectionOrder);
+
             _sections.Add(Section.Create(Id, title, order));
 
             return Result.Success();
+        }
+
+        public Result RemoveSection(Guid sectionId)
+        {
+            if (Status == CourseStatus.Archived)
+                return Result.Failure(CourseErrors.CannotModifyArchivedCourse);
+
+            var section = _sections.FirstOrDefault(s => s.Id == sectionId);
+
+            if (section is null)
+                return Result.Failure(CourseErrors.SectionNotFound);
+
+            _sections.Remove(section);
+
+            return Result.Success();
+        }
+
+        public Result AddLesson(
+           Guid sectionId,
+           string title,
+           string? description,
+           LessonType type,
+           string? contentUrl,
+           int durationInSeconds,
+           int order,
+           bool isFreePreview = false)
+        {
+            if (Status == CourseStatus.Archived)
+                return Result.Failure(CourseErrors.CannotModifyArchivedCourse);
+
+            var section = _sections.FirstOrDefault(s => s.Id == sectionId);
+
+            if (section is null)
+                return Result.Failure(CourseErrors.SectionNotFound);
+
+            return section.AddLesson(
+                title, description, type, contentUrl, durationInSeconds, order, isFreePreview);
+        }
+
+        public Result UpdateLesson(
+            Guid sectionId,
+            Guid lessonId,
+            string title,
+            string? description,
+            LessonType type,
+            string? contentUrl,
+            int durationInSeconds,
+            bool isFreePreview)
+        {
+            if (Status == CourseStatus.Archived)
+                return Result.Failure(CourseErrors.CannotModifyArchivedCourse);
+
+            var section = _sections.FirstOrDefault(s => s.Id == sectionId);
+
+            if (section is null)
+                return Result.Failure(CourseErrors.SectionNotFound);
+
+            return section.UpdateLesson(
+                lessonId, title, description, type, contentUrl, durationInSeconds, isFreePreview);
+        }
+
+        public Result RemoveLesson(Guid sectionId, Guid lessonId)
+        {
+            if (Status == CourseStatus.Archived)
+                return Result.Failure(CourseErrors.CannotModifyArchivedCourse);
+
+            var section = _sections.FirstOrDefault(s => s.Id == sectionId);
+
+            if (section is null)
+                return Result.Failure(CourseErrors.SectionNotFound);
+
+            return section.RemoveLesson(lessonId);
         }
 
         public void ClearDomainEvents() => _domainEvents.Clear();

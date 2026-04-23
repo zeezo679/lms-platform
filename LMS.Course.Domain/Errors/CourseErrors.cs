@@ -21,6 +21,12 @@ namespace LMS.Course.Domain.Errors
         public static readonly Error SectionTitleRequired =
             new("Course.SectionTitleRequired", "Section title is required.");
 
+        public static readonly Error SectionNotFound =
+            new("Course.SectionNotFound", "The section was not found.");
+
+        public static readonly Error DuplicateSectionOrder =
+            new("Course.DuplicateSectionOrder", "A section with this order already exists.");
+
         public static readonly Error NotFound =
             new("Course.NotFound", "The course was not found.");
 

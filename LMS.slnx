@@ -10,10 +10,10 @@
     <Project Path="src/Services/Auth/LMS.Auth.API/LMS.Auth.API.csproj" />
   </Folder>
   <Folder Name="/src/Services/Course/">
-    <Project Path="LMS.Course.Application/LMS.Course.Application.csproj" Id="feaa7ddc-f250-413f-87eb-85164e347348" />
     <Project Path="LMS.Course.Domain/LMS.Course.Domain.csproj" Id="13496a83-7a42-4934-b315-49432fde3868" />
-    <Project Path="LMS.Course.Infrastructure/LMS.Course.Infrastructure.csproj" Id="5e51b39a-6d51-4b7a-b208-5fcea4a3f62d" />
     <Project Path="src/Services/Course/LMS.Course.API/LMS.Course.API.csproj" />
+    <Project Path="src/Services/Course/LMS.Course.Application/LMS.Course.Application.csproj" Id="149bab58-ed07-40c6-82c5-7018414f1bd7" />
+    <Project Path="src/Services/Course/LMS.Course.Infrastructure/LMS.Course.Infrastructure.csproj" Id="255acae7-c63e-438a-adbe-82baa8c831a3" />
   </Folder>
   <Folder Name="/src/Services/Enrollment/">
     <Project Path="src/Services/Enrollment/LMS.Enrollment.API/LMS.Enrollment.API.csproj" />

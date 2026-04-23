@@ -1,10 +1,11 @@
 ﻿using LMS.Common.Entities;
+using LMS.Course.Domain.Enums;
 using LMS.Course.Domain.Errors;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LMS.Course.Domain.Enums
+namespace LMS.Course.Domain.Entities
 {
     public class Section: BaseEntity
     {
@@ -50,6 +51,35 @@ namespace LMS.Course.Domain.Enums
                 return Result.Failure(result.Error);
 
             _lessons.Add(result.value);
+            return Result.Success();
+        }
+
+        internal Result UpdateLesson(
+            Guid lessonId,
+            string title,
+            string? description,
+            LessonType type,
+            string? contentUrl,
+            int durationInSeconds,
+            bool isFreePreview)
+        {
+            var lesson = _lessons.FirstOrDefault(l => l.Id == lessonId);
+
+            if (lesson == null)
+                return Result.Failure(LessonErrors.NotFound);
+
+            return lesson.Update(title, description, type, contentUrl, durationInSeconds, isFreePreview);
+        }
+
+        internal Result RemoveLesson(Guid lessonId)
+        {
+            var lesson = _lessons.FirstOrDefault(l => l.Id == lessonId);
+
+            if (lesson == null)
+                return Result.Failure(LessonErrors.NotFound);
+
+            _lessons.Remove(lesson);
+
             return Result.Success();
         }
     }

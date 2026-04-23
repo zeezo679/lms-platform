@@ -1,8 +1,19 @@
+using LMS.Course.Application.Mapping;
+using LMS.Course.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<CourseAppDbContext>(optionBuilder =>
+{
+    optionBuilder.UseSqlServer(builder.Configuration.GetConnectionString("constr"));
+});
+
+builder.Services.AddAutoMapper(typeof(CourseProfile).Assembly);
 
 var app = builder.Build();
 
