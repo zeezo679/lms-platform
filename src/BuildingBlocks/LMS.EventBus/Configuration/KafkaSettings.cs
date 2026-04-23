@@ -9,3 +9,4 @@ public class KafkaSettings
     public string TopicPrefix { get; set; } = "lms.";
     public string[] Topics { get; set; } = Array.Empty<string>();
 }
+

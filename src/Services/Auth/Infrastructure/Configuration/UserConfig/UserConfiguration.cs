@@ -11,13 +11,23 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.HasKey(u => u.Id);
 
-        builder.Property(u => u.Name).IsRequired().HasMaxLength(100);
-
         builder.Property(u => u.Email).IsRequired().HasMaxLength(255);
 
         builder.HasIndex(u => u.Email).IsUnique();
 
         builder.Property(u => u.PasswordHash).IsRequired();
+
+        builder.Property(u => u.IsEmailVerified).IsRequired();
+
+        builder.Property(u => u.EmailVerificationToken).HasMaxLength(200);
+
+        builder.Property(u => u.PasswordResetToken).HasMaxLength(200);
+
+        builder.Property(u => u.PasswordResetTokenExpiry);
+
+        builder.Property(u => u.RefreshToken).HasMaxLength(500);
+
+        builder.Property(u => u.RefreshTokenExpiry);
         
         builder.Property(u => u.Role).HasConversion<string>().IsRequired();
     }

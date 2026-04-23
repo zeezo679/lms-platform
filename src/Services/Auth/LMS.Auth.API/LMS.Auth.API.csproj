@@ -16,7 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Application/Application.csproj" />
     <ProjectReference Include="../Infrastructure/Infrastructure.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/LMS.Common/LMS.Common.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/LMS.EventBus/LMS.EventBus.csproj" />
   </ItemGroup>
 
 </Project>

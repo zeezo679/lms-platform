@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/src/Services/" />
   <Folder Name="/src/Services/Auth/">
+    <Project Path="src/Services/Auth/Application/Application.csproj" />
     <Project Path="src/Services/Auth/Domain/Domain.csproj" />
     <Project Path="src/Services/Auth/Infrastructure/Infrastructure.csproj" />
     <Project Path="src/Services/Auth/LMS.Auth.API/LMS.Auth.API.csproj" />

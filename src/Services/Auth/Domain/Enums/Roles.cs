@@ -1,8 +1,8 @@
 namespace Domain.Enums;
 
-public enum Roles
+public enum Role
 {
+    Student,
+    Instructor,
     Admin,
-    User,
-    Instructor
 }

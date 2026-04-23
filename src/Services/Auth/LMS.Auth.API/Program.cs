@@ -1,6 +1,13 @@
 using System.Text;
-using System.Threading.RateLimiting;
+using AuthService.Application.Commands.RegisterUser;
+using AuthService.Application.Interfaces;
+using Infrastructure.Communication;
+using Infrastructure.Data;
+using Infrastructure.Security;
+using LMS.EventBus.Extensions;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 
@@ -13,6 +20,21 @@ public class Program
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
+
+        //Add DbContext 
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+        builder.Services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+        builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+        builder.Services.AddScoped<IEmailService, NoOpEmailService>();
+
+        builder.Services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssemblyContaining<RegisterUserCommand>());
+
+        builder.Services.AddEventBus(builder.Configuration);
+        
 
         builder.Services.AddAuthentication(options =>
             {
@@ -40,17 +62,11 @@ public class Program
 
         var app = builder.Build();
 
-        if (app.Environment.IsDevelopment())
-        {
-            // app.UseSwagger();
-            // app.UseSwaggerUI();
-            app.UseHttpsRedirection();
-        }
+        app.UseHttpsRedirection();
 
         
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseRateLimiter();
         app.MapControllers();
 
         app.Run();
