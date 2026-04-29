@@ -44,14 +44,21 @@ public class KafkaConsumerService : IHostedService, IDisposable
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var topics = _kafkaSettings.Value.Topics; //list of topics the consumer subscribes to
-        _consumer.Subscribe(topics);
-
-        // start a background task to consume messages
-        _executingTask = Task.Run(
-             () => ExecuteAsync(_cts.Token), 
-             cancellationToken
-        );
+        try
+        {
+            var topics = _kafkaSettings.Value.Topics; //list of topics the consumer subscribes to
+            _consumer.Subscribe(topics);
+            // start a background task to consume messages
+            _executingTask = Task.Run(
+                () => ExecuteAsync(_cts.Token), 
+                cancellationToken
+            );
+        } catch (Exception ex)
+        {
+            _logger.LogError(ex, "KafkaConsumerService failed to start. " +
+            "Check BootstrapServers configuration.");
+        }
+        
 
         return Task.CompletedTask;
     }

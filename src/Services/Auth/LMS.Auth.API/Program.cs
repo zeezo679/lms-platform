@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using LMS.Common.Extensions;
 using Infrastructure.Extensions;
+using LMS.Contracts.Events;
+using LMS.EventBus.Abstractions;
+using LMS.EventBus.Kafka;
 
 
 namespace LMS.Auth.API;
@@ -22,16 +25,21 @@ public class Program
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
+
         builder.Services.AddInfrastructure(builder.Configuration);
+
         builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<RegisterUserCommand>());
+
         builder.Services.AddGlobalExceptionHandler();
-        builder.Services.AddEventBus(builder.Configuration);
+
+        builder.Services.AddEventBusProducer(builder.Configuration);
         
         builder.Services.AddJwtAuthentication(builder.Configuration);
 
         builder.Services.AddAuthorization();
 
         var app = builder.Build();
+
 
         app.UseHttpsRedirection();
 
@@ -45,6 +53,3 @@ public class Program
 
     
 }
-
-
-

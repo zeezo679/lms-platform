@@ -9,17 +9,18 @@ services:
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     volumes:
       - kafka-data:/var/lib/kafka/data
   
-  sqlserver:
+  lms_sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sql_server
     ports:
@@ -41,5 +42,24 @@ services:
     depends_on:
       - kafka
 
+  auth-service:
+    build:
+      context: .
+      dockerfile: src/Services/Auth/LMS.Auth.API/Dockerfile
+    container_name: lms-auth-service
+    ports:
+      - "5001:8080"
+    environment:
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - ConnectionStrings__DefaultConnection=${AUTH_DB_CONNECTION}
+      - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
+      - Kafka__GroupId=lms-auth-service
+    depends_on:
+      - lms_sqlserver
+      - kafka
+
 volumes:
   kafka-data:
+  sqlserver-data:
