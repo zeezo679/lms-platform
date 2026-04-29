@@ -18,6 +18,17 @@ services:
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     volumes:
       - kafka-data:/var/lib/kafka/data
+  
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql_server
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Zeezo_679"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
