@@ -1,3 +1,4 @@
+using Application.DTOs;
 using AuthService.Application.DTOs;
 using AuthService.Application.Interfaces;
 using Domain.Entities;
@@ -6,16 +7,17 @@ using LMS.Contracts.Events;
 using LMS.EventBus.Abstractions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace AuthService.Application.Commands.RegisterUser;
 
 public sealed class RegisterUserCommandHandler(
     IAppDbContext context,
     IPasswordHasher passwordHasher,
-    IJwtTokenGenerator jwtTokenGenerator,
-    IEventBus eventBus) : IRequestHandler<RegisterUserCommand, AuthResponseDto>
+    ILogger<RegisterUserCommandHandler> logger,
+    IEventBus eventBus) : IRequestHandler<RegisterUserCommand, RegisterResponseDto>
 {
-    public async Task<AuthResponseDto> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<RegisterResponseDto> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
@@ -34,20 +36,22 @@ public sealed class RegisterUserCommandHandler(
         await context.Users.AddAsync(user, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
-        await eventBus.PublishAsync(
+
+        try
+        {
+            await eventBus.PublishAsync(
             new UserRegisteredIntegrationEvent(
                 user.Id,
                 user.Email,
                 verificationToken,
                 user.Role.ToString()),
             cancellationToken);
+        } catch (Exception ex)
+        {
+            logger.LogError(ex, 
+            "User {UserId} was created in the db but failed to publish UserRegisteredIntegrationEvent. Manual intervention may be required to send the verification email.", user.Id);
+        }
 
-        var accessToken = jwtTokenGenerator.GenerateAccessToken(user);
-        var refreshToken = jwtTokenGenerator.GenerateRefreshToken();
-
-        user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7));
-        await context.SaveChangesAsync(cancellationToken);
-
-        return new AuthResponseDto(accessToken, refreshToken, user.Id);
+        return new RegisterResponseDto(user.Id, verificationToken);
     }
 }

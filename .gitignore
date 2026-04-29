@@ -13,8 +13,13 @@
 *.userosscache
 *.sln.docstates
 
+**/appsettings.Development.json
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+
+.env
+.env.example
 
 # Mono auto generated files
 mono_crash.*

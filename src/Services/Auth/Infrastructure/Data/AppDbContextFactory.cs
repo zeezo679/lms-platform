@@ -12,9 +12,9 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 
         var connectionString =
             Environment.GetEnvironmentVariable("AUTH_DB_CONNECTION")
-            ?? "Server=localhost;Database=lms_auth;Password=1234;Port=5432;Username=postgres";
+            ?? "Server=localhost,1433;Database=lms_auth;User Id=sa;Password=Zeezo_679;TrustServerCertificate=True;Encrypt=True;";
 
-        optionsBuilder.UseNpgsql(connectionString);
+        optionsBuilder.UseSqlServer(connectionString);
 
         return new AppDbContext(optionsBuilder.Options);
     }
