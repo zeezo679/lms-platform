@@ -1,4 +1,4 @@
-using AutoMapper;
+
 using LMS.Course.Application.Abstractions;
 using LMS.Course.Application.Contracts;
 using LMS.Course.Application.Mapping;
@@ -6,12 +6,10 @@ using LMS.Course.Application.Services;
 using LMS.Course.Infrastructure.Data;
 using LMS.Course.Infrastructure.Data.ImplementContracts;
 using LMS.Course.Infrastructure.EventBus;
-using LMS.EventBus.Abstractions;
-using LMS.EventBus.Extensions;
-using LMS.EventBus.Kafka;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-namespace LMS.Course.API
+namespace API
 {
     public class Program
     {
@@ -20,9 +18,10 @@ namespace LMS.Course.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
-
             #region ToBuildSwaggerUI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -33,18 +32,15 @@ namespace LMS.Course.API
                 optionBuilder.UseSqlServer(builder.Configuration.GetConnectionString("constr"));
             });
 
-            builder.Services.AddAutoMapper(typeof(CourseProfile));
+            builder.Services.AddAutoMapper(typeof(CourseProfile).Assembly);
             builder.Services.AddScoped<IEventPublisher, EventPublisherAdapter>();
             builder.Services.AddScoped<ICourseRepository, CourseRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<ICourseRepository, CourseRepository>();
             builder.Services.AddScoped<ICourseService, CourseService>();
 
             // register EventBus (kafka)
-            builder.Services.AddEventBus(builder.Configuration);
-
-            //builder.Services.AddScoped<IEventBus, KafkaEventBus>();
-
-            builder.Services.AddControllers();
+            //builder.Services.AddEventBus(builder.Configuration);
 
             var app = builder.Build();
 
@@ -58,24 +54,14 @@ namespace LMS.Course.API
                 #endregion
             }
 
-
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
 
-            app.UseRouting();
-
-            
-
-            app.UseAuthentication();
             app.UseAuthorization();
 
-            // ==========================================
-            // Endpoints Mapping
-            // ==========================================
+
             app.MapControllers();
 
             await app.RunAsync();
         }
     }
 }
-
