@@ -140,7 +140,11 @@ namespace LMS.Course.Domain.Entities
             if (_sections.Any(s => s.Order == order))
                 return Result.Failure(CourseErrors.DuplicateSectionOrder);
 
-            _sections.Add(Section.Create(Id, title, order));
+            var section = Section.Create(Id, title, order);
+
+            _sections.Add(section);
+
+            _domainEvents.Add(new SectionAddedEvent(Id, section.Id, section.Title));
 
             return Result.Success();
         }
@@ -156,6 +160,8 @@ namespace LMS.Course.Domain.Entities
                 return Result.Failure(CourseErrors.SectionNotFound);
 
             _sections.Remove(section);
+
+            _domainEvents.Add(new SectionRemovedEvent(Id, section.Id));
 
             return Result.Success();
         }
@@ -177,6 +183,8 @@ namespace LMS.Course.Domain.Entities
 
             if (section is null)
                 return Result.Failure(CourseErrors.SectionNotFound);
+
+            //_domainEvents.Add(new LessonAddedEvent(Id, section.Id, lesson.Id))
 
             return section.AddLesson(
                 title, description, type, contentUrl, durationInSeconds, order, isFreePreview);

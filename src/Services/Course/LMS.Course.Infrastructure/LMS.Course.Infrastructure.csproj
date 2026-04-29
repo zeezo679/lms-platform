@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\LMS.Course.Domain\LMS.Course.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\LMS.EventBus\LMS.EventBus.csproj" />
     <ProjectReference Include="..\LMS.Course.Application\LMS.Course.Application.csproj" />
   </ItemGroup>
 

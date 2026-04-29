@@ -48,9 +48,9 @@ namespace LMS.Course.Application.Services
         public async Task<Result<PagedResult<CourseSummaryDto>>> GetCoursesAsync(
             int page, 
             int pageSize, 
-            string? category, 
-            CourseLevel? level, 
-            string? search, 
+            string? category,
+            CourseLevel? level,
+            string? search,
             CancellationToken ct = default)
         {
             var safePage = Math.Max(1, page);
@@ -182,6 +182,8 @@ namespace LMS.Course.Application.Services
             _repository.Update(course);
             await _unitOfWork.SaveChangesAsync(ct);
 
+            await PublishDomainEventsAsync(course, ct);
+
             return Result.Success();
         }
         public async Task<Result> RemoveSectionAsync(Guid courseId, Guid sectionId, Guid requestingInstructorId, CancellationToken ct = default)
@@ -201,6 +203,8 @@ namespace LMS.Course.Application.Services
 
             _repository.Update(course);
             await _unitOfWork.SaveChangesAsync(ct);
+
+            await PublishDomainEventsAsync(course, ct);
 
             return Result.Success();
         }
@@ -262,7 +266,6 @@ namespace LMS.Course.Application.Services
 
             return Result.Success();
         }
-
         public async Task<Result> RemoveLessonAsync(Guid courseId, Guid sectionId, Guid lessonId, Guid requestingInstructorId, CancellationToken ct = default)
         {
             var course = await _repository.GetByIdAsync(courseId, ct);
