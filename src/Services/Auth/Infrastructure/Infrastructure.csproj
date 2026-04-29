@@ -15,12 +15,14 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.17.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Configuration/RefreshTokenConfig/" />
     <Folder Include="Configuration/UserConfig/" />
     <Folder Include="Data/" />
+    <Folder Include="Extensions/" />
   </ItemGroup>
 
   <ItemGroup>

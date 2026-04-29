@@ -9,6 +9,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using LMS.Common.Extensions;
+using Infrastructure.Extensions;
 
 
 namespace LMS.Auth.API;
@@ -20,43 +22,12 @@ public class Program
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-
-        //Add DbContext 
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-        builder.Services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
-        builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-        builder.Services.AddScoped<IEmailService, NoOpEmailService>();
-
-        builder.Services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssemblyContaining<RegisterUserCommand>());
-
+        builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<RegisterUserCommand>());
+        builder.Services.AddGlobalExceptionHandler();
         builder.Services.AddEventBus(builder.Configuration);
         
-
-        builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
-                                                    throw new InvalidOperationException("Jwt:Key is not configured.")))                        
-                    };
-                }
-            );
+        builder.Services.AddJwtAuthentication(builder.Configuration);
 
         builder.Services.AddAuthorization();
 

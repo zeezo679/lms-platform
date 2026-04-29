@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Application.DTOs;
 using AuthService.Application.Commands.ChangePassword;
 using AuthService.Application.Commands.ForgotPassword;
 using AuthService.Application.Commands.Login;
@@ -22,17 +23,17 @@ namespace LMS.Auth.API.Controllers;
 public sealed class AuthController(IMediator mediator) : ControllerBase
 {
     [HttpPost("register")]
-    public async Task<ActionResult<ApiResponse<AuthResponseDto>>> Register(
+    public async Task<ActionResult<ApiResponse<RegisterResponseDto>>> Register(
         [FromBody] RegisterRequest request,
         CancellationToken cancellationToken)
     {
         var command = new RegisterUserCommand(request.Email, request.Password, request.Role);
         var result = await mediator.Send(command, cancellationToken);
 
-        return Ok(new ApiResponse<AuthResponseDto>(
+        return Ok(new ApiResponse<RegisterResponseDto>(
             true,
-            result,
-            "Registration successful."));
+            new RegisterResponseDto(result.UserId, result.EmailVerficationToken),
+            "Registration successful. Please check your email to verify your account. "));
     }
 
     [HttpPost("login")]
