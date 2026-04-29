@@ -12,5 +12,7 @@ namespace LMS.Course.Domain.Events
     {
         public Guid EventId { get; } = Guid.NewGuid();
         public DateTime CreationDate { get; } = DateTime.UtcNow;
+
+        public DateTime OccurredOn => throw new NotImplementedException();
     }
 }

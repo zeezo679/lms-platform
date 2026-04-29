@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands/ChangePassword/" />
+    <Folder Include="Commands/" />
+    <Folder Include="Commands/ForgotPassword/" />
+    <Folder Include="Commands/Login/" />
+    <Folder Include="Commands/RefreshToken/" />
+    <Folder Include="Commands/RegisterUser/" />
+    <Folder Include="Commands/ResendVerificationEmail/" />
+    <Folder Include="Commands/ResetPassword/" />
+    <Folder Include="Commands/VerifyEmail/" />
+    <Folder Include="DTOs/" />
+    <Folder Include="Interfaces/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="14.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Domain/Domain.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/LMS.Common/LMS.Common.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/LMS.Contracts/LMS.Contracts.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/LMS.EventBus/LMS.EventBus.csproj" />
+  </ItemGroup>
+
+</Project>

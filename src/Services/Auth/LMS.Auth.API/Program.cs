@@ -1,41 +1,55 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Text;
+using AuthService.Application.Commands.RegisterUser;
+using AuthService.Application.Interfaces;
+using Infrastructure.Communication;
+using Infrastructure.Data;
+using Infrastructure.Security;
+using LMS.EventBus.Extensions;
+using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using LMS.Common.Extensions;
+using Infrastructure.Extensions;
+using LMS.Contracts.Events;
+using LMS.EventBus.Abstractions;
+using LMS.EventBus.Kafka;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+namespace LMS.Auth.API;
+public class Program
 {
-    app.MapOpenApi();
-}
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-app.UseHttpsRedirection();
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+        builder.Services.AddInfrastructure(builder.Configuration);
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<RegisterUserCommand>());
 
-app.Run();
+        builder.Services.AddGlobalExceptionHandler();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        builder.Services.AddEventBusProducer(builder.Configuration);
+        
+        builder.Services.AddJwtAuthentication(builder.Configuration);
+
+        builder.Services.AddAuthorization();
+
+        var app = builder.Build();
+
+
+        app.UseHttpsRedirection();
+
+        
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers();
+
+        app.Run();
+    }
+
+    
 }
