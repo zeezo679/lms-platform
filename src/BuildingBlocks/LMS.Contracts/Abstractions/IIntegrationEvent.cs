@@ -10,7 +10,7 @@ occurrences across different microservices or bounded contexts
 public interface IIntegrationEvent
 {
     Guid EventId { get; }
-    DateTime CreationDate { get; }
+    DateTime OccurredOn { get; }
 }
 
 /*

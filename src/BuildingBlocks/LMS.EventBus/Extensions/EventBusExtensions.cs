@@ -9,19 +9,27 @@ namespace LMS.EventBus.Extensions;
 
 public static class EventBusExtensions
 {   
-    public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddEventBusProducer(this IServiceCollection services, IConfiguration configuration)
     {
-        var options = new KafkaSettings();
-        configuration.GetSection("Kafka").Bind(options);
-
-        // register the event bus and its dependencies
         services.Configure<KafkaSettings>(configuration.GetSection("Kafka"));
         services.AddSingleton<IEventBusSubscriptionsManager, InMemorySubscriptionsManager>();
         services.AddSingleton<KafkaProducerService>();
         services.AddSingleton<KafkaEventBus>();
         services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<KafkaEventBus>());
+
+        return services;
+    }
+
+    public static IServiceCollection AddEventBusProducerAndConsumer(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddEventBusProducer(configuration);
         services.AddHostedService<KafkaConsumerService>();
 
         return services;
+    }
+
+    public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
+    {
+        return services.AddEventBusProducerAndConsumer(configuration);
     }
 }
