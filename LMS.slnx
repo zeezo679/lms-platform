@@ -17,6 +17,9 @@
   </Folder>
   <Folder Name="/src/Services/Enrollment/">
     <Project Path="src/Services/Enrollment/LMS.Enrollment.API/LMS.Enrollment.API.csproj" />
+    <Project Path="src/Services/Enrollment/LMS.Enrolment.Application/LMS.Enrollment.Application.csproj" Id="0e0b6f50-2775-401f-8bc5-07bff88430f2" />
+    <Project Path="src/Services/Enrollment/LMS.Enrolment.Domain/LMS.Enrollment.Domain.csproj" Id="d9122ea8-b10e-4e81-ab3a-630fe5dca0ff" />
+    <Project Path="src/Services/Enrollment/LMS.Enrolment.Infrastructure/LMS.Enrollment.Infrastructure.csproj" Id="7f80717a-1897-4adb-bc88-f9be6d3a6172" />
   </Folder>
   <Folder Name="/src/Services/Upload/">
     <Project Path="src/Services/Upload/LMS.Upload.API/LMS.Upload.API.csproj" />
