@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-<<<<<<< HEAD
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
@@ -21,9 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\LMS.Course.Application\LMS.Course.Application.csproj" />
     <ProjectReference Include="..\LMS.Course.Infrastructure\LMS.Course.Infrastructure.csproj" />
-=======
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
->>>>>>> edaa4b40098eb5c4be0b729fa088cca8513cae45
+
   </ItemGroup>
 
 </Project>
