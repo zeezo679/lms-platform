@@ -64,11 +64,6 @@ namespace LMS.Course.API
 
             app.UseRouting();
 
-            
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
             // ==========================================
             // Endpoints Mapping
             // ==========================================
