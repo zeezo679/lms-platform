@@ -1,4 +1,5 @@
-﻿using LMS.Enrollment.Application.DTOs;
+﻿using LMS.Common.Exceptions;
+using LMS.Enrollment.Application.DTOs;
 using LMS.Enrollment.Application.Interfaces.Repos;
 using LMS.Enrollment.Domain.Entities;
 using LMS.Enrollment.Domain.Enums;
@@ -23,7 +24,7 @@ namespace LMS.Enrollment.Application.Commands.CreateEnrollment
             // validate the request (Business rules)
             bool alreadyEnrolled = await _enrollmentRepository.HasStudentEnrolledAsync(request.StudentId, request.CourseId);
             if (alreadyEnrolled)
-                throw new Exception("Student is already enrolled in this course.");
+                throw new DomainConflictException("Student is already enrolled in this course.");
             // Mapping the request to the domain model
             var enrollment = new StudentEnrollment
             {
