@@ -1,4 +1,5 @@
-﻿using LMS.Common.Responses;
+﻿using LMS.Common.Exceptions;
+using LMS.Common.Responses;
 using LMS.Enrollment.Application.Commands.CreateEnrollment;
 using LMS.Enrollment.Application.Commands.UnenrollStudent;
 using LMS.Enrollment.Application.DTOs;
@@ -21,6 +22,8 @@ namespace LMS.Enrollment.API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<EnrollmentResponseDto>>> CreateEnrollment([FromBody] CreateEnrollmentCommand command)
         {
+            if (command == null)
+                throw new DomainValidationException("Request body is missing or malformed.");
             var result = await _mediator.Send(command);
 
             return Created(result, "Student enrolled successfully.");

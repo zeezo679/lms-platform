@@ -10,17 +10,14 @@ namespace LMS.Enrollment.Application.Dependencies
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            // we register MediatR here, which will automatically discover and register all handlers, requests, and notifications in the assembly
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-
-            // we register FluentValidation validators here, which will automatically discover and register all validators in the assembly
+            // Add FluentValidation validators from the assembly containing CreateEnrollmentCommandValidator
             services.AddValidatorsFromAssembly(typeof(CreateEnrollmentCommandValidator).Assembly);
+            // Add MediatR and register the ValidationBehavior
             services.AddMediatR(cfg => {
-                // Register all MediatR handlers from the assembly containing the CreateEnrollmentCommand
-                cfg.RegisterServicesFromAssembly(typeof(CreateEnrollmentCommand).Assembly);
-                // Register the ValidationBehavior as an open generic type
+                cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
                 cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             });
+
             return services;
         }
     }
