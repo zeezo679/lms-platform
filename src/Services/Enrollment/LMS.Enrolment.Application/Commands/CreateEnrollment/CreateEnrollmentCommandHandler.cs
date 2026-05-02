@@ -35,7 +35,7 @@ namespace LMS.Enrollment.Application.Commands.CreateEnrollment
             };
             // Save the enrollment to the database
             var savedEnrollment = await _enrollmentRepository.AddAsync(enrollment);
-
+            await _enrollmentRepository.SaveChangesAsync(cancellationToken);
             // ToDo : Publish an event to the message bus (e.g., RabbitMQ, Kafka) to notify other services about the new enrollment
             #region Publish Event
             #endregion

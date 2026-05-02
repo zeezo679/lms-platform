@@ -15,5 +15,11 @@ namespace LMS.Enrollment.Application.Interfaces.Repos
         Task<IEnumerable<StudentEnrollment>> GetEnrollmentsByStudentIdAsync(Guid studentId);
 
         Task<(IEnumerable<StudentEnrollmentsGroupDto> Data, int TotalCount)> GetPagedGroupedEnrollmentsAsync(int pageNumber, int pageSize);
+
+        Task<StudentEnrollment?> GetEnrollmentAsync(Guid studentId, Guid courseId);
+
+        void Delete(StudentEnrollment enrollment);
+
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

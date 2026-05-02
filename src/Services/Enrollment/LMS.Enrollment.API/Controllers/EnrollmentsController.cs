@@ -1,5 +1,6 @@
 ﻿using LMS.Common.Responses;
 using LMS.Enrollment.Application.Commands.CreateEnrollment;
+using LMS.Enrollment.Application.Commands.UnenrollStudent;
 using LMS.Enrollment.Application.DTOs;
 using LMS.Enrollment.Application.Queries.GetAllEnrollments;
 using LMS.Enrollment.Application.Queries.GetStudentEnrollments;
@@ -41,6 +42,15 @@ namespace LMS.Enrollment.API.Controllers
             var result = await _mediator.Send(query);
 
             return Success(result, "All enrollments retrieved successfully.");
+        }
+
+        [HttpDelete("student/{studentId}/course/{courseId}")]
+        public async Task<ActionResult<ApiResponse<string>>> UnenrollStudent(Guid studentId, Guid courseId)
+        {
+            var command = new UnenrollStudentCommand(studentId, courseId);
+            await _mediator.Send(command);
+
+            return Success("Student unenrolled from the course successfully.");
         }
     }
 }

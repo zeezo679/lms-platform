@@ -76,5 +76,19 @@ namespace LMS.Enrollment.Infrastructure.Repositories
 
             return (data, totalRecords);
         }
+
+        public async Task<StudentEnrollment?> GetEnrollmentAsync(Guid studentId, Guid courseId)
+        {
+            return await _context.Enrollments
+                .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
+        }
+
+        public void Delete(StudentEnrollment enrollment)
+        {
+            _context.Enrollments.Remove(enrollment);
+        }
+
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+            =>await _context.SaveChangesAsync(cancellationToken);
     }
 }
