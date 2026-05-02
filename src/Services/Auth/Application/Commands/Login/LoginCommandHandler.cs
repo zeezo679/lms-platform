@@ -19,20 +19,18 @@ public sealed class LoginCommandHandler(
             .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
 
         if (user is null)
-        {
             throw new DomainNotFoundException("User", normalizedEmail);
-        }
+        
 
         var passwordValid = passwordHasher.Verify(request.Password, user.PasswordHash);
         if (!passwordValid)
-        {
+
             throw new DomainUnauthorizedException("Invalid email or password.");
-        }
+        
 
         if (!user.IsEmailVerified)
-        {
             throw new DomainUnauthorizedException("Email not verified");
-        }
+        
 
         var accessToken = jwtTokenGenerator.GenerateAccessToken(user);
         var refreshToken = jwtTokenGenerator.GenerateRefreshToken();

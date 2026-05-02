@@ -1,41 +1,81 @@
-var builder = WebApplication.CreateBuilder(args);
+using AutoMapper;
+using LMS.Course.Application.Abstractions;
+using LMS.Course.Application.Contracts;
+using LMS.Course.Application.Mapping;
+using LMS.Course.Application.Services;
+using LMS.Course.Infrastructure.Data;
+using LMS.Course.Infrastructure.Data.ImplementContracts;
+using LMS.Course.Infrastructure.EventBus;
+using LMS.EventBus.Abstractions;
+using LMS.EventBus.Extensions;
+using LMS.EventBus.Kafka;
+using Microsoft.EntityFrameworkCore;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+namespace LMS.Course.API
 {
-    app.MapOpenApi();
+    public class Program
+    {
+        public static async Task Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+
+            // Add services to the container.
+            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+            builder.Services.AddOpenApi();
+
+            #region ToBuildSwaggerUI
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+            #endregion
+
+            builder.Services.AddDbContext<CourseAppDbContext>(optionBuilder =>
+            {
+                optionBuilder.UseSqlServer(builder.Configuration.GetConnectionString("constr"));
+            });
+
+            builder.Services.AddAutoMapper(typeof(CourseProfile));
+            builder.Services.AddScoped<IEventPublisher, EventPublisherAdapter>();
+            builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<ICourseService, CourseService>();
+
+            // register EventBus (kafka)
+            builder.Services.AddEventBus(builder.Configuration);
+
+            //builder.Services.AddScoped<IEventBus, KafkaEventBus>();
+
+            builder.Services.AddControllers();
+
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+                #region ToBuildSwaggerUI
+                app.UseSwagger();
+                app.UseSwaggerUI();
+                #endregion
+            }
+
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            // ==========================================
+            // Endpoints Mapping
+            // ==========================================
+            app.MapControllers();
+
+            await app.RunAsync();
+        }
+    }
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
