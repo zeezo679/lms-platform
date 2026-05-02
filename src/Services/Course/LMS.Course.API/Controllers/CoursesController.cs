@@ -24,8 +24,13 @@ namespace LMS.Course.API.Controllers
         // Helpers
         private Guid GetCurrentUserId()
         {
-            var claim = User.FindFirst("sub") ?? User.FindFirst("userId");
-            return claim is not null && Guid.TryParse(claim.Value, out var id) ? id : Guid.Empty;
+            //Before YARP
+            // var claim = User.FindFirst("sub") ?? User.FindFirst("userId");
+            // return claim is not null && Guid.TryParse(claim.Value, out var id) ? id : Guid.Empty;
+
+            // After YARP with ClaimsToHeadersMiddleware
+            var userIdHeader = Request.Headers["X-User-Id"].FirstOrDefault();
+            return Guid.TryParse(userIdHeader, out var id) ? id : Guid.Empty;
         }
 
         private IActionResult ToErrorResponse(Result result) =>

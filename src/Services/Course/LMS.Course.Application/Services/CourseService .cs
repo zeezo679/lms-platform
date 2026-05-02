@@ -8,7 +8,7 @@ using LMS.Course.Domain;
 using LMS.Course.Domain.Entities;
 using LMS.Course.Domain.Enums;
 using LMS.Course.Domain.Errors;
-using LMS.Course.Domain.Events;
+using LMS.Contracts.Events;
 using System;
 using System.Collections.Generic;
 using System.Text;
