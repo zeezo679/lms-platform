@@ -1,4 +1,17 @@
 services:
+  lms-gateway:
+    build:
+      context: .
+      dockerfile: src/Gateway/LMS.Gateway/Dockerfile
+    container_name: lms-gateway
+    ports:
+      - "5000:8080"
+    environment:
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+    depends_on:
+      - auth-service
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: lms-kafka
@@ -56,6 +69,22 @@ services:
       - ConnectionStrings__DefaultConnection=${AUTH_DB_CONNECTION}
       - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
       - Kafka__GroupId=lms-auth-service
+    depends_on:
+      - lms_sqlserver
+      - kafka
+
+  course-service:
+    build:
+      context: .
+      dockerfile: src/Services/Course/LMS.Course.API/Dockerfile
+    container_name: lms-course-service
+    ports:
+      - "5002:8080"
+    environment:
+      - ConnectionStrings__constr=${COURSE_DB_CONNECTION}
+      - ConnectionStrings__DefaultConnection=${COURSE_DB_CONNECTION}
+      - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
+      - Kafka__GroupId=lms-course-service
     depends_on:
       - lms_sqlserver
       - kafka

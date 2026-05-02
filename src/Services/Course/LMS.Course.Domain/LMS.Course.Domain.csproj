@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\BuildingBlocks\LMS.Common\LMS.Common.csproj" />
-    <ProjectReference Include="..\src\BuildingBlocks\LMS.Contracts\LMS.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\LMS.Common\LMS.Common.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\LMS.Contracts\LMS.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

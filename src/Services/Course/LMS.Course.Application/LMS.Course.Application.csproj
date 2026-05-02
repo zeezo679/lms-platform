@@ -7,11 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="16.1.1" />
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\LMS.Course.Domain\LMS.Course.Domain.csproj" />
+    <ProjectReference Include="..\LMS.Course.Domain\LMS.Course.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\LMS.Contracts\LMS.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
