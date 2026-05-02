@@ -1,41 +1,61 @@
+﻿using LMS.Enrollment.API.APIEndpointsHandler;
+using LMS.Enrollment.API.Middlewares;
+using LMS.Enrollment.Application.Dependencies;
+using LMS.Enrollment.Infrastructure.Dependencies;
+using Scalar.AspNetCore;
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// --- 1. (Services) ---
+// Controllers & JSON Options & Api Behavior
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Convert enums to strings in JSON responses for better readability
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // السطر ده بيقفل الفلتر الرخم بتاع مايكروسوفت، وبيسيب الريكويست يعدي للـ Pipeline بتاعنا
+        options.SuppressModelStateInvalidFilter = true;
+    });
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization(); 
+
 builder.Services.AddOpenApi();
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.OperationFilter<StandardizedResponseOperationFilter>();
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- 2. الـ Middleware Pipeline ---
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi(); 
+
+    app.MapScalarApiReference(options =>
+    {
+        options.WithTitle("LMS Enrollment API")
+               .WithTheme(ScalarTheme.DeepSpace) // ثيم شكله شيك جداً
+               .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+    });
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

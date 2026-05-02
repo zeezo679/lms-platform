@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Scalar.AspNetCore" Version="2.14.9" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LMS.Enrolment.Application\LMS.Enrollment.Application.csproj" />
+    <ProjectReference Include="..\LMS.Enrolment.Infrastructure\LMS.Enrollment.Infrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
   </ItemGroup>
 
