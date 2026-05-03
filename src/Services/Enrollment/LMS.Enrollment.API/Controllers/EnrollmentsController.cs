@@ -19,25 +19,47 @@ namespace LMS.Enrollment.API.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ApiResponse<EnrollmentResponseDto>>> CreateEnrollment([FromBody] CreateEnrollmentCommand command)
+        // this method is used to extract the student ID from the request headers, which is set by the authentication middleware.
+        private Guid GetStudentIdFromHeader()
         {
-            if (command == null)
+            var userIdStr = HttpContext.Request.Headers["X-User-Id"].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid studentId))
+                throw new UnauthorizedAccessException("User is not authenticated or missing valid ID.");
+
+            return studentId;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<ApiResponse<EnrollmentResponseDto>>> CreateEnrollment([FromBody] EnrollmentRequestDto request)
+        {
+            if (request == null)
                 throw new DomainValidationException("Request body is missing or malformed.");
+
+            var studentId = GetStudentIdFromHeader();
+
+            var command = new CreateEnrollmentCommand(studentId, request.CourseId);
+
             var result = await _mediator.Send(command);
 
             return Created(result, "Student enrolled successfully.");
         }
 
-        [HttpGet("student/{studentId}")]
-        public async Task<ActionResult<ApiResponse<IEnumerable<EnrollmentResponseDto>>>> GetStudentEnrollments(Guid studentId)
+        // this endpoint retrieves the enrollments for the authenticated student.
+        // It uses the student ID from the request headers to ensure
+        // that students can only access their own enrollments.
+        [HttpGet("my-enrollments")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<EnrollmentResponseDto>>>> GetMyEnrollments()
         {
+            var studentId = GetStudentIdFromHeader();
+
             var query = new GetStudentEnrollmentsQuery(studentId);
             var result = await _mediator.Send(query);
 
-            return Success(result, "Student enrollments retrieved successfully.");
+            return Success(result, "Your enrollments retrieved successfully.");
         }
 
+        // this endpoint retrieves all enrollments, grouped by student, with pagination support.
         [HttpGet]
         public async Task<ActionResult<ApiResponse<PagedResponse<StudentEnrollmentsGroupDto>>>> GetAllEnrollments([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -47,13 +69,19 @@ namespace LMS.Enrollment.API.Controllers
             return Success(result, "All enrollments retrieved successfully.");
         }
 
-        [HttpDelete("student/{studentId}/course/{courseId}")]
-        public async Task<ActionResult<ApiResponse<string>>> UnenrollStudent(Guid studentId, Guid courseId)
+        // this endpoint allows a student to unenroll from a course.
+        // It uses the student ID from the request headers to ensure
+        // that students can only unenroll themselves from courses they are enrolled in.
+        [HttpDelete("course/{courseId}")]
+        public async Task<ActionResult<ApiResponse<string>>> UnenrollStudent(Guid courseId)
         {
+            var studentId = GetStudentIdFromHeader();
+
             var command = new UnenrollStudentCommand(studentId, courseId);
             await _mediator.Send(command);
 
             return Success("Student unenrolled from the course successfully.");
         }
     }
+
 }

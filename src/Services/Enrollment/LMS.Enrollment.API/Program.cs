@@ -1,9 +1,12 @@
-﻿using LMS.Enrollment.API.APIEndpointsHandler;
+﻿using LMS.Contracts.Events;
 using LMS.Enrollment.API.Middlewares;
 using LMS.Enrollment.Application.Dependencies;
+using LMS.Enrollment.Application.IntegrationEventHandlers;
 using LMS.Enrollment.Infrastructure.Dependencies;
+using LMS.EventBus.Abstractions;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
+using LMS.EventBus.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,14 +30,20 @@ builder.Services.AddOpenApi();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.OperationFilter<StandardizedResponseOperationFilter>();
-});
+// --- Event Bus Configuration ---
+builder.Services.AddEventBus(builder.Configuration);
 
 var app = builder.Build();
 
-// --- 2. الـ Middleware Pipeline ---
+// --- 2. Event Bus Subscriptions ---
+var eventBusSubscriptionsManager = app.Services.GetRequiredService<IEventBusSubscriptionsManager>();
+
+#region Event Bus Subscriptions 
+eventBusSubscriptionsManager.AddSubscription<CourseDeletedEvent, CourseDeletedEventHandler>();
+// eventBusSubscriptionsManager.AddSubscription<UserDeletedIntegrationEvent, UserDeletedEventHandler>();
+#endregion
+
+// --- 3. الـ Middleware Pipeline ---
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())

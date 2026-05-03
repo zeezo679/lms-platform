@@ -12,6 +12,8 @@ services:
       - Jwt__Audience=${JWT_AUDIENCE}
     depends_on:
       - auth-service
+      - course-service
+      - enrollment-service
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: lms-kafka
@@ -32,7 +34,7 @@ services:
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     volumes:
       - kafka-data:/var/lib/kafka/data
-  
+
   lms_sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sql_server
@@ -89,6 +91,21 @@ services:
       - lms_sqlserver
       - kafka
 
+  enrollment-service:
+    build:
+      context: .
+      dockerfile: src/Services/Enrollment/LMS.Enrollment.API/Dockerfile
+    container_name: lms-enrollment-service
+    ports:
+      - "5003:8080"
+    environment:
+      # تأكد إن اسم الـ Connection string هنا مطابق للي في الـ appsettings.json بتاعك
+      - ConnectionStrings__DefaultConnection=${ENROLLMENT_DB_CONNECTION}
+      - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
+      - Kafka__GroupId=enrollment-service-group
+    depends_on:
+      - lms_sqlserver
+      - kafka
 volumes:
   kafka-data:
   sqlserver-data:

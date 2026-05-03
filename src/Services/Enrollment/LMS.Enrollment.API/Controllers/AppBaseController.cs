@@ -13,7 +13,7 @@ namespace LMS.Enrollment.API.Controllers
         // Standardized with data success response
         protected ActionResult Success<T>(T data, string message = "Operation Successfully")
         {
-            return Ok(new ApiResponse<T>(true,data, message,200));
+            return Ok(new ApiResponse<T>(true, data, message, 200));
         }
 
         // Standardized without data success response
