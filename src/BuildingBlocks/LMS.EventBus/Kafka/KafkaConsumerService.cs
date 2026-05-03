@@ -8,6 +8,7 @@ using LMS.EventBus.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LMS.EventBus.Kafka;
 
@@ -17,12 +18,12 @@ public class KafkaConsumerService : IHostedService, IDisposable
     private readonly IConsumer<string, string> _consumer;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IEventBusSubscriptionsManager _subsManager;
-    private readonly KafkaSettings _kafkaSettings;
+    private readonly IOptions<KafkaSettings> _kafkaSettings;
     private readonly ILogger<KafkaConsumerService> _logger;
     private Task _executingTask = Task.CompletedTask;
     private CancellationTokenSource _cts = new();
 
-    public KafkaConsumerService(KafkaSettings kafkaSettings, IServiceScopeFactory scopeFactory, ILogger<KafkaConsumerService> logger, IEventBusSubscriptionsManager subsManager)
+    public KafkaConsumerService(IOptions<KafkaSettings> kafkaSettings, IServiceScopeFactory scopeFactory, ILogger<KafkaConsumerService> logger, IEventBusSubscriptionsManager subsManager)
     {
         _kafkaSettings = kafkaSettings;
         _scopeFactory = scopeFactory;
@@ -31,8 +32,8 @@ public class KafkaConsumerService : IHostedService, IDisposable
 
         var config = new ConsumerConfig
         {
-            BootstrapServers = kafkaSettings.BootstrapServers,
-            GroupId = kafkaSettings.GroupId,
+            BootstrapServers = kafkaSettings.Value.BootstrapServers,
+            GroupId = kafkaSettings.Value.GroupId,
             AutoOffsetReset = AutoOffsetReset.Earliest,
             EnableAutoCommit = false // we will commit manually after processing
         };
@@ -43,14 +44,21 @@ public class KafkaConsumerService : IHostedService, IDisposable
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var topics = _kafkaSettings.Topics; //list of topics the consumer subscribes to
-        _consumer.Subscribe(topics);
-
-        // start a background task to consume messages
-        _executingTask = Task.Run(
-             () => ExecuteAsync(_cts.Token), 
-             cancellationToken
-        );
+        try
+        {
+            var topics = _kafkaSettings.Value.Topics; //list of topics the consumer subscribes to
+            _consumer.Subscribe(topics);
+            // start a background task to consume messages
+            _executingTask = Task.Run(
+                () => ExecuteAsync(_cts.Token), 
+                cancellationToken
+            );
+        } catch (Exception ex)
+        {
+            _logger.LogError(ex, "KafkaConsumerService failed to start. " +
+            "Check BootstrapServers configuration.");
+        }
+        
 
         return Task.CompletedTask;
     }
@@ -67,7 +75,7 @@ public class KafkaConsumerService : IHostedService, IDisposable
 
                 await ProcessMessageAsync(result, cancellationToken);
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 break;
             }
@@ -77,6 +85,8 @@ public class KafkaConsumerService : IHostedService, IDisposable
             }
         }
     }
+
+    
 
     private async Task ProcessMessageAsync(ConsumeResult<string, string> consumeResult, CancellationToken cancellationToken)
     {
