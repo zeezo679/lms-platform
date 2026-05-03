@@ -21,5 +21,10 @@ namespace LMS.Enrollment.Application.Interfaces.Repos
         void Delete(StudentEnrollment enrollment);
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+        #region Additional Methods for Events 
+        Task CancelEnrollmentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default);
+        Task CancelEnrollmentsByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default);
+        #endregion
     }
 }

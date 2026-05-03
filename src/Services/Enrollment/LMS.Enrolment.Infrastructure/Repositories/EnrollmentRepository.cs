@@ -1,6 +1,7 @@
 ﻿using LMS.Enrollment.Application.DTOs;
 using LMS.Enrollment.Application.Interfaces.Repos;
 using LMS.Enrollment.Domain.Entities;
+using LMS.Enrollment.Domain.Enums;
 using LMS.Enrollment.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -90,5 +91,22 @@ namespace LMS.Enrollment.Infrastructure.Repositories
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
             =>await _context.SaveChangesAsync(cancellationToken);
+
+        #region Additional Methods for Events
+        public async Task CancelEnrollmentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
+        {
+            await _context.Enrollments
+                    .Where(e => e.CourseId == courseId)
+                    .ExecuteDeleteAsync(cancellationToken);
+        }
+
+        public async Task CancelEnrollmentsByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+        {
+            await _context.Enrollments
+                   .Where(e => e.StudentId == studentId)
+                   .ExecuteDeleteAsync(cancellationToken);
+        }
+
+        #endregion
     }
 }

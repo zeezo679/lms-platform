@@ -10,5 +10,11 @@ namespace LMS.Enrollment.Application.Commands.CreateEnrollment
     {
         public Guid StudentId { get; set; }
         public Guid CourseId { get; set; }
+
+        public CreateEnrollmentCommand(Guid studentId, Guid courseId)
+        {
+            StudentId = studentId;
+            CourseId = courseId;
+        }
     }
 }
