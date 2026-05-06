@@ -40,7 +40,7 @@ var eventBusSubscriptionsManager = app.Services.GetRequiredService<IEventBusSubs
 
 #region Event Bus Subscriptions 
 eventBusSubscriptionsManager.AddSubscription<CourseDeletedEvent, CourseDeletedEventHandler>();
-// eventBusSubscriptionsManager.AddSubscription<UserDeletedIntegrationEvent, UserDeletedEventHandler>();
+eventBusSubscriptionsManager.AddSubscription<UserDeletedIntegrationEvent, UserDeletedEventHandler>();
 #endregion
 
 // --- 3. الـ Middleware Pipeline ---
