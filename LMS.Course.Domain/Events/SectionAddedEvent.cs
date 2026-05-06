@@ -1,16 +1,17 @@
-﻿using LMS.Contracts.Abstractions;
+using LMS.Contracts.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LMS.Course.Domain.Events
+namespace LMS.Contracts.Events;
+
+public sealed record SectionAddedEvent(
+    Guid CourseId,
+    Guid SectionID,
+    string Title) : IIntegrationEvent
 {
-    public sealed record SectionAddedEvent(
-        Guid CourseId,
-        Guid SectionID,
-        string Title) : IIntegrationEvent
-    {
-        public Guid EventId { get; } = Guid.NewGuid();
-        public DateTime OccurredOn { get; } = DateTime.UtcNow;
-    }
+    public Guid EventId { get; } = Guid.NewGuid();
+    public DateTime CreationDate { get; } = DateTime.UtcNow;
+
+    public DateTime OccurredOn => CreationDate;
 }
