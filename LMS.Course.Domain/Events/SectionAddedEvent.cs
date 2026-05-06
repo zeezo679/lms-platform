@@ -11,8 +11,6 @@ namespace LMS.Course.Domain.Events
         string Title) : IIntegrationEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
-        public DateTime CreationDate { get; } = DateTime.UtcNow;
-
-        public DateTime OccurredOn => throw new NotImplementedException();
+        public DateTime OccurredOn { get; } = DateTime.UtcNow;
     }
 }
