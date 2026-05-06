@@ -12,5 +12,5 @@ public sealed record SectionRemovedEvent(
     public Guid EventId { get; } = Guid.NewGuid();
     public DateTime CreationDate { get; } = DateTime.UtcNow;
 
-    public DateTime OccurredOn => throw new NotImplementedException();
+    public DateTime OccurredOn => CreationDate;
 }

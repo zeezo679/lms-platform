@@ -38,8 +38,8 @@ namespace LMS.Course.Application.Services
 
         private async Task PublishDomainEventsAsync(CourseEntity course, CancellationToken ct)
         {
-            foreach (var domainEvent in course.DomainEvents.OfType<IIntegrationEvent>())
-                await _eventPublisher.PublishAsync(domainEvent, ct);
+            foreach (var domainEvent in course.DomainEvents)
+                await _eventPublisher.PublishAsync((dynamic)domainEvent, ct);
 
             course.ClearDomainEvents();
         }

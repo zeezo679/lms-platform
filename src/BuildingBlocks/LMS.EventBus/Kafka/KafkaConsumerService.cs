@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using LMS.EventBus.Abstractions;
 using LMS.EventBus.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,25 +43,39 @@ public class KafkaConsumerService : IHostedService, IDisposable
     }
 
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
+        var config = new AdminClientConfig { BootstrapServers = _kafkaSettings.Value.BootstrapServers };
+        using var adminClient = new AdminClientBuilder(config).Build();
+
         try
         {
-            var topics = _kafkaSettings.Value.Topics; //list of topics the consumer subscribes to
-            _consumer.Subscribe(topics);
-            // start a background task to consume messages
-            _executingTask = Task.Run(
-                () => ExecuteAsync(_cts.Token), 
-                cancellationToken
-            );
-        } catch (Exception ex)
-        {
-            _logger.LogError(ex, "KafkaConsumerService failed to start. " +
-            "Check BootstrapServers configuration.");
-        }
-        
+            var specs = _kafkaSettings.Value.Topics
+                .Select(t => new TopicSpecification { Name = t, NumPartitions = 1, ReplicationFactor = 1 });
 
-        return Task.CompletedTask;
+            await adminClient.CreateTopicsAsync(specs);
+        }
+        catch (CreateTopicsException ex)
+        {
+            var realErrors = ex.Results.Where(r => r.Error.Code != ErrorCode.TopicAlreadyExists).ToList();
+            if (realErrors.Any())
+            {
+                _logger.LogError(ex, "Failed to create Kafka topics: {Errors}",
+                    string.Join(", ", realErrors.Select(r => $"{r.Topic}: {r.Error.Reason}")));
+                return;
+            }
+        }
+
+        try
+        {
+            var topics = _kafkaSettings.Value.Topics;
+            _consumer.Subscribe(topics);
+            _executingTask = Task.Run(() => ExecuteAsync(_cts.Token), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "KafkaConsumerService failed to start. Check BootstrapServers configuration.");
+        }
     }
 
     private async Task ExecuteAsync(CancellationToken cancellationToken)

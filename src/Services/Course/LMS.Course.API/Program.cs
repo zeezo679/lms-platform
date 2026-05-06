@@ -1,4 +1,5 @@
 using AutoMapper;
+using LMS.Common.Security;
 using LMS.Course.Application.Abstractions;
 using LMS.Course.Application.Contracts;
 using LMS.Course.Application.Mapping;
@@ -33,7 +34,11 @@ namespace LMS.Course.API
                 optionBuilder.UseSqlServer(builder.Configuration.GetConnectionString("constr"));
             });
 
-            builder.Services.AddAutoMapper(typeof(CourseProfile));
+            builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(CourseProfile).Assembly));
+
+            //Authentication and Authorization
+            builder.Services.AddGatewayAuthentication();
+
             builder.Services.AddScoped<IEventPublisher, EventPublisherAdapter>();
             builder.Services.AddScoped<ICourseRepository, CourseRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -45,6 +50,7 @@ namespace LMS.Course.API
             //builder.Services.AddScoped<IEventBus, KafkaEventBus>();
 
             builder.Services.AddControllers();
+            
 
             var app = builder.Build();
 
@@ -67,6 +73,8 @@ namespace LMS.Course.API
             // ==========================================
             // Endpoints Mapping
             // ==========================================
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
 
             await app.RunAsync();
