@@ -2,6 +2,8 @@
 using Application.Interfaces;
 using Domain.Entities;
 using LMS.Common.Exceptions;
+using LMS.Contracts.Events;
+using LMS.EventBus.Abstractions;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Application.Commands.UpdateUserProfile
 {
-    public class UpdateUserProfileCommandHandler(IUserRepository repository)
+    public class UpdateUserProfileCommandHandler(IUserRepository repository, IEventBus eventBus)
         : IRequestHandler<UpdateUserProfileCommand, UserProfileDto>
     {
         public async Task<UserProfileDto> Handle(UpdateUserProfileCommand request, CancellationToken ct)
@@ -30,6 +32,21 @@ namespace Application.Commands.UpdateUserProfile
 
             repository.Update(profile);
             await repository.SaveChangesAsync(ct);
+
+            try
+            {
+                await eventBus.PublishAsync(
+                    new UserProfileUpdatedIntegrationEvent(
+                        profile.Id,
+                        profile.AuthUserId,
+                        profile.Email,
+                        profile.FullName,
+                        profile.Role.ToString()), ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _ = ex;
+            }
 
             return MapToDto(profile);
         }

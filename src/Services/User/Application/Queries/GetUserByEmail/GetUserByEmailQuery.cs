@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetUserById
+namespace Application.Queries.GetUserByEmail
 {
-    public record GetUserByIdQuery(
-        Guid Id) : IRequest<UserProfileDto>;
+    public record GetUserByEmailQuery(
+        string Email) : IRequest<UserProfileDto>;
 }
