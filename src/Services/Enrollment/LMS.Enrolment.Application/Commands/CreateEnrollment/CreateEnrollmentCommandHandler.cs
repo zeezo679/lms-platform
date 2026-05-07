@@ -15,16 +15,26 @@ namespace LMS.Enrollment.Application.Commands.CreateEnrollment
     public class CreateEnrollmentCommandHandler : IRequestHandler<CreateEnrollmentCommand, EnrollmentResponseDto>
     {
         private readonly IEnrollmentRepository _enrollmentRepository;
+        private readonly ICourseReadRepository _courseReadRepository;
         private readonly IEventBus _eventBus;
 
-        public CreateEnrollmentCommandHandler(IEnrollmentRepository enrollmentRepository, IEventBus eventBus)
+        public CreateEnrollmentCommandHandler(
+            IEnrollmentRepository enrollmentRepository,
+            ICourseReadRepository courseReadRepository, 
+            IEventBus eventBus)
         {
             _enrollmentRepository = enrollmentRepository;
+            _courseReadRepository = courseReadRepository;
             _eventBus = eventBus;
         }
         // this method will handle the command to create an enrollment
         public async Task<EnrollmentResponseDto> Handle(CreateEnrollmentCommand request, CancellationToken cancellationToken)
         {
+            // validate 
+            bool courseExists = await _courseReadRepository.CourseExistsAsync(request.CourseId);
+            if (!courseExists)
+                throw new DomainNotFoundException("The requested course does not exist.");
+
             // validate the request (Business rules)
             bool alreadyEnrolled = await _enrollmentRepository.HasStudentEnrolledAsync(request.StudentId, request.CourseId);
             if (alreadyEnrolled)
