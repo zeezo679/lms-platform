@@ -1,4 +1,4 @@
-using LMS.Contracts.Abstractions;
+﻿using LMS.Contracts.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,17 +7,16 @@ using System.Threading.Tasks;
 
 namespace LMS.Contracts.Events
 {
-    public record UserDeletedIntegrationEvent(
+    public record UserDeactivatedIntegrationEvent(
         Guid UserId,
         Guid AuthUserId,
         string Email,
         Guid EventId,
         DateTime OccurredOn) : IIntegrationEvent
     {
-        public UserDeletedIntegrationEvent(Guid userId, Guid authUserId, string email)
+        public UserDeactivatedIntegrationEvent(Guid userId, Guid authUserId, string email)
             : this(userId, authUserId, email, Guid.NewGuid(), DateTime.UtcNow)
         {
         }
     }
 }
-
