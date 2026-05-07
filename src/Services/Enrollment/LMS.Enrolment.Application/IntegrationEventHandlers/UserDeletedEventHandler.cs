@@ -23,7 +23,7 @@ namespace LMS.Enrollment.Application.IntegrationEventHandlers
 
        public async Task Handle(UserDeletedIntegrationEvent @event, CancellationToken ct = default)
        {
-           _logger.LogInformation("Received UserDeletedIntegrationEvent for StudentId: {StudentId}. Canceling related enrollments.", @event.UserId); // تأكد من اسم الـ Property في الـ Event
+           _logger.LogInformation($"Received UserDeletedIntegrationEvent for StudentId: {@event.UserId}. Canceling related enrollments.");
 
            await _enrollmentRepository.CancelEnrollmentsByStudentIdAsync(@event.UserId, ct);
 
