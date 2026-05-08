@@ -34,9 +34,6 @@
     <Project Path="src/Services/Upload/LMS.Upload.Infrastructure/LMS.Upload.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Services/User/">
-    <Project Path="../lms-platform/src/Services/User/Infrastructure/Infrastructure.csproj" Id="c686b7a5-434b-4269-b794-a5c3aadba451" />
     <Project Path="src/Services/User/API/API.csproj" Id="c455dc5f-9ea8-4a8f-ba18-3f62a2b248b7" />
-    <Project Path="src/Services/User/Application/Application.csproj" Id="a6f4c7a6-d85b-4029-96b7-23740d99c832" />
-    <Project Path="src/Services/User/Domain/Domain.csproj" Id="d9b2e398-5d4e-487a-86a2-8fb646eae575" />
   </Folder>
 </Solution>
