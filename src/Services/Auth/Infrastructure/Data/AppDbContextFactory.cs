@@ -12,7 +12,7 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 
         var connectionString =
             Environment.GetEnvironmentVariable("AUTH_DB_CONNECTION")
-            ?? "Server=localhost,1433;Database=lms_auth;User Id=sa;Password=Zeezo_679;TrustServerCertificate=True;Encrypt=True;";
+            ?? "Server=localhost,1433;Database=lms_auth;User Id=sa;Password=Zeezo_679;Encrypt=True;TrustServerCertificate=True;";
 
         optionsBuilder.UseSqlServer(connectionString);
 

@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="../../../BuildingBlocks/LMS.Common/LMS.Common.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/LMS.Contracts/LMS.Contracts.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/LMS.EventBus/LMS.EventBus.csproj" />
     <ProjectReference Include="..\LMS.Upload.Domain\LMS.Upload.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Commands/" />
-    <Folder Include="Commands/UploadFileCommand/" />
+    <Folder Include="Commands/UploadFile/" />
     <Folder Include="Interfaces/" />
     <Folder Include="Options/" />
   </ItemGroup>
@@ -14,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="MediatR" Version="14.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
   </ItemGroup>
 
   <PropertyGroup>

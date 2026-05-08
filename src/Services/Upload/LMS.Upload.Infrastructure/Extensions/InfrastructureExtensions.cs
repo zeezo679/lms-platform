@@ -16,7 +16,7 @@ public static class InfrastructureExtensions
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IUploadDbContext>(sp => sp.GetRequiredService<UploadDbContext>());
-        services.Configure<StorageOptions>(configuration.GetSection("Storage"));
+        services.Configure<StorageOptions>(configuration.GetSection("StorageOptions"));
         services.AddScoped<IStorageProvider, LocalStorageProvider>();
 
         return services;
