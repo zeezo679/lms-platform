@@ -15,6 +15,7 @@ namespace LMS.Enrollment.Infrastructure.Data
         }
         // DbSet for StudentEnrollments
         public DbSet<StudentEnrollment> Enrollments { get; set; }
+        public DbSet<Course> Courses { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -28,6 +29,12 @@ namespace LMS.Enrollment.Infrastructure.Data
                 entity.Property(e => e.EnrollmentDate).IsRequired();
                 entity.Property(e => e.Status).IsRequired();
                 entity.HasIndex(e => new { e.StudentId, e.CourseId }).IsUnique();
+            });
+            // Configure the Course entity
+            modelBuilder.Entity<Course>(entity =>
+            {
+                entity.ToTable("Courses");
+                entity.HasKey(e => e.Id);
             });
         }
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())

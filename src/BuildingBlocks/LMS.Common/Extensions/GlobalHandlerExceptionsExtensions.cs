@@ -11,7 +11,8 @@ public static class GlobalHandlerExceptionsExtensions
 {
     public static IServiceCollection AddGlobalExceptionHandler(this IServiceCollection services)
     {
-        services.AddSingleton<IExceptionHandler, GlobalExceptionHandler>();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
 
         return services;
     }

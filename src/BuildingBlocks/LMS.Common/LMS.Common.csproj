@@ -10,6 +10,7 @@
     <Folder Include="Entities/" />
     <Folder Include="Extensions/" />
     <Folder Include="Middleware/" />
+    <Folder Include="Security/" />
   </ItemGroup>
 
   <ItemGroup>

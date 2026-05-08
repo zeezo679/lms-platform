@@ -1,22 +1,11 @@
-using System.Text;
 using AuthService.Application.Commands.RegisterUser;
-using AuthService.Application.Interfaces;
-using Infrastructure.Communication;
-using Infrastructure.Data;
-using Infrastructure.Security;
-using LMS.EventBus.Extensions;
-using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using LMS.Common.Extensions;
 using Infrastructure.Extensions;
-using LMS.Contracts.Events;
-using LMS.EventBus.Abstractions;
-using LMS.EventBus.Kafka;
-
+using LMS.Common.Extensions;
+using LMS.EventBus.Extensions;
+using Microsoft.OpenApi.Models;
 
 namespace LMS.Auth.API;
+
 public class Program
 {
     public static void Main(string[] args)
@@ -33,23 +22,66 @@ public class Program
         builder.Services.AddGlobalExceptionHandler();
 
         builder.Services.AddEventBusProducer(builder.Configuration);
-        
+
         builder.Services.AddJwtAuthentication(builder.Configuration);
 
         builder.Services.AddAuthorization();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter your JWT token here"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+        });
+        
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
 
         var app = builder.Build();
 
+        app.UseCors("AllowAll");
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        app.UseExceptionHandler();
 
         app.UseHttpsRedirection();
 
-        
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
 
         app.Run();
     }
-
-    
 }

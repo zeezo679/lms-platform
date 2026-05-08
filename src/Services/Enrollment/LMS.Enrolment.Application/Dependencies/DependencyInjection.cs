@@ -22,7 +22,8 @@ namespace LMS.Enrollment.Application.Dependencies
             });
             // transiant because we want a new instance of the handler for each event
             services.AddTransient<CourseDeletedEventHandler>();
-            // services.AddTransient<UserDeletedEventHandler>()
+            services.AddTransient<UserDeletedEventHandler>();
+            services.AddTransient<CourseCreatedEventHandler>();
             return services;
         }
     }

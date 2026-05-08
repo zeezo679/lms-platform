@@ -29,6 +29,9 @@
   </Folder>
   <Folder Name="/src/Services/Upload/">
     <Project Path="src/Services/Upload/LMS.Upload.API/LMS.Upload.API.csproj" />
+    <Project Path="src/Services/Upload/LMS.Upload.Application/LMS.Upload.Application.csproj" />
+    <Project Path="src/Services/Upload/LMS.Upload.Domain/LMS.Upload.Domain.csproj" />
+    <Project Path="src/Services/Upload/LMS.Upload.Infrastructure/LMS.Upload.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Services/User/">
     <Project Path="src/Services/User/API/API.csproj" Id="c455dc5f-9ea8-4a8f-ba18-3f62a2b248b7" />
