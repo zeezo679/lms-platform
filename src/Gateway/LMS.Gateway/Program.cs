@@ -73,6 +73,7 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("http://localhost:5001/swagger/v1/swagger.json", "Auth Service");
     options.SwaggerEndpoint("http://localhost:5002/swagger/v1/swagger.json", "Course Service");
     options.SwaggerEndpoint("http://localhost:5003/swagger/v1/swagger.json", "Enrollment Service");
+    options.SwaggerEndpoint("http://localhost:5004/swagger/v1/swagger.json", "Upload Service");
 
     options.RoutePrefix = "swagger";
 });
