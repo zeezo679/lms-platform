@@ -14,6 +14,7 @@ services:
       - auth-service
       - course-service
       - enrollment-service
+      - user-service
 
   kafka:
     image: confluentinc/cp-kafka:7.6.0
@@ -107,6 +108,22 @@ services:
       - ConnectionStrings__DefaultConnection=${ENROLLMENT_DB_CONNECTION}
       - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
       - Kafka__GroupId=enrollment-service-group
+    depends_on:
+      - lms_sqlserver
+      - kafka
+
+  user-service:
+    build:
+      context: .
+      dockerfile: src/Services/User/API/Dockerfile
+    container_name: lms-user-service
+    ports:
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${USER_DB_CONNECTION}
+      - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
+      - Kafka__GroupId=lms-user-service
     depends_on:
       - lms_sqlserver
       - kafka
