@@ -8,6 +8,8 @@ using LMS.EventBus.Extensions;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
+using LMS.Enrollment.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +73,23 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// --- START OF MIGRATION BLOCK ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var db = services.GetRequiredService<EnrollmentDbContext>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+// --- END OF MIGRATION BLOCK ---
 
 app.UseCors("AllowAll");
 
