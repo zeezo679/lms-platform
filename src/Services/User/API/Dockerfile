@@ -17,10 +17,12 @@ COPY ["src/BuildingBlocks/LMS.Contracts/LMS.Contracts.csproj",                  
 COPY ["src/BuildingBlocks/LMS.EventBus/LMS.EventBus.csproj",                         "src/BuildingBlocks/LMS.EventBus/"]
 
 RUN dotnet restore "src/Services/User/API/API.csproj"
+RUN dotnet restore "src/Services/User/API/API.csproj"
 
 # ── Copy the full source and publish ──────────────────────────────────────────
 COPY . .
 
+RUN dotnet publish "src/Services/User/API/API.csproj" \
 RUN dotnet publish "src/Services/User/API/API.csproj" \
     --configuration Release \
     --no-restore \
@@ -52,4 +54,5 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 8080
 
+ENTRYPOINT ["dotnet", "API.dll"]
 ENTRYPOINT ["dotnet", "API.dll"]
