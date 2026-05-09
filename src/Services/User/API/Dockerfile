@@ -46,7 +46,7 @@ RUN chown -R appuser:appgroup /app
 USER appuser
 
 # Kestrel will bind to this port inside the container.
-# docker-compose maps 5004:8080 externally.
+# docker-compose maps 5005:8080 externally.
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 

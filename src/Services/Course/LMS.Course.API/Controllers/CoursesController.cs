@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using LMS.Common.Exceptions;
+using LMS.Common.Responses;
 using LMS.Course.Application.Contracts;
 using LMS.Course.Application.Dtos.RequestDtos;
 using LMS.Course.Application.Dtos.Response_Dtos;
@@ -228,6 +229,22 @@ namespace LMS.Course.API.Controllers
                 courseId, sectionId, lessonId, instructorId, ct);
 
             return result.IsFailure ? ToErrorResponse(result) : NoContent();
+        }
+
+        [HttpPost("submissions")]
+        [Authorize(Roles = "Student")]
+        public async Task<ActionResult<ApiResponse<string>>> SubmitLesson(
+            [FromBody] SubmitLessonDto dto,
+            CancellationToken ct)
+        {
+            var studentId = GetCurrentUserId();
+            
+            if (studentId == Guid.Empty)
+                throw new DomainUnauthorizedException();
+
+            var result = await _courseService.SubmitLessonAsync(dto.LessonId, studentId, dto.FileUrl, ct);
+            
+            return Ok(new ApiResponse<string>(true, "Submission successful."));
         }
 
 

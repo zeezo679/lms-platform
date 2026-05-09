@@ -19,4 +19,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.15" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Commands/UpdateUserAvatar/" />
+  </ItemGroup>
+
 </Project>

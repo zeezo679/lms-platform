@@ -15,6 +15,7 @@ namespace LMS.Course.Infrastructure.Data
         public DbSet<CourseEntity> Courses { get; set; }
         public DbSet<Section> Sections { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
+        public DbSet<Submission> Submissions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
