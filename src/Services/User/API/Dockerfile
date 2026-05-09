@@ -8,21 +8,19 @@ WORKDIR /src
 # Docker will only re-run dotnet restore when a .csproj file changes,
 # not on every source code change.
 
-COPY ["src/Services/User/API/API.csproj",                                           "src/Services/User/API/"]
-COPY ["src/Services/User/Application/Application.csproj",                           "src/Services/User/Application/"]
-COPY ["src/Services/User/Infrastructure/Infrastructure.csproj",                     "src/Services/User/Infrastructure/"]
-COPY ["src/Services/User/Domain/Domain.csproj",                                     "src/Services/User/Domain/"]
+COPY ["src/Services/User/API/API.csproj",                         "src/Services/User/API/"]
+COPY ["src/Services/User/Application/Application.csproj",         "src/Services/User/Application/"]
+COPY ["src/Services/User/Infrastructure/Infrastructure.csproj",   "src/Services/User/Infrastructure/"]
+COPY ["src/Services/User/Domain/Domain.csproj",                   "src/Services/User/Domain/"]
 COPY ["src/BuildingBlocks/LMS.Common/LMS.Common.csproj",                             "src/BuildingBlocks/LMS.Common/"]
 COPY ["src/BuildingBlocks/LMS.Contracts/LMS.Contracts.csproj",                       "src/BuildingBlocks/LMS.Contracts/"]
 COPY ["src/BuildingBlocks/LMS.EventBus/LMS.EventBus.csproj",                         "src/BuildingBlocks/LMS.EventBus/"]
 
 RUN dotnet restore "src/Services/User/API/API.csproj"
-RUN dotnet restore "src/Services/User/API/API.csproj"
 
 # ── Copy the full source and publish ──────────────────────────────────────────
 COPY . .
 
-RUN dotnet publish "src/Services/User/API/API.csproj" \
 RUN dotnet publish "src/Services/User/API/API.csproj" \
     --configuration Release \
     --no-restore \
@@ -54,5 +52,4 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "API.dll"]
 ENTRYPOINT ["dotnet", "API.dll"]
