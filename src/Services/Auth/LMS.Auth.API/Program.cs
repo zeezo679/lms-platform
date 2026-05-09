@@ -1,7 +1,9 @@
 using AuthService.Application.Commands.RegisterUser;
+using Infrastructure.Data;
 using Infrastructure.Extensions;
 using LMS.Common.Extensions;
 using LMS.EventBus.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 namespace LMS.Auth.API;
@@ -65,6 +67,23 @@ public class Program
         });
 
         var app = builder.Build();
+
+        // --- START OF MIGRATION BLOCK ---
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            try
+            {
+                var db = services.GetRequiredService<AppDbContext>();
+                db.Database.Migrate();
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occurred while migrating the database.");
+            }
+        }
+        // --- END OF MIGRATION BLOCK ---
 
         app.UseCors("AllowAll");
 
