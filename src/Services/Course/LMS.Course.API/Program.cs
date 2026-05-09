@@ -64,6 +64,7 @@ namespace LMS.Course.API
             builder.Services.AddScoped<ICourseRepository, CourseRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ICourseService, CourseService>();
+            builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
 
             // register EventBus (kafka)
             builder.Services.AddEventBus(builder.Configuration);

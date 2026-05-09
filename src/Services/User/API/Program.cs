@@ -9,6 +9,7 @@ using LMS.Contracts.Events;
 using LMS.EventBus.Abstractions;
 using LMS.EventBus.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 namespace API
 {
@@ -21,8 +22,40 @@ namespace API
             // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter your JWT token here"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
 
             builder.Services.AddDbContext<UserAppDbContext>(optionBuilder =>
             {
@@ -41,11 +74,14 @@ namespace API
             builder.Services.AddEventBus(builder.Configuration);
 
             var app = builder.Build();
+            
+            app.UseCors("AllowAll");
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             // Event Bus Subscriptions 
@@ -53,6 +89,7 @@ namespace API
             subscriptionsManager.AddSubscription<UserRegisteredIntegrationEvent, UserRegisteredIntegrationEventHandler>();
 
             app.UseHttpsRedirection();
+
 
             app.UseAuthorization();
 

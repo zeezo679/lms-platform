@@ -1,5 +1,6 @@
 ﻿using Application.Commands.DeactivateUser;
 using Application.Commands.DeleteUser;
+using Application.Commands.UpdateUserAvatar;
 using Application.Commands.UpdateUserProfile;
 using Application.Dtos;
 using Application.Queries.GetAllUsers;
@@ -9,8 +10,8 @@ using LMS.Common.Exceptions;
 using LMS.Common.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -19,12 +20,22 @@ namespace API.Controllers
     {
         private Guid GetCallerAuthUserId()
         {
-            var value = HttpContext.Request.Headers["X-User-Id"].FirstOrDefault();
+            var value = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(value) || !Guid.TryParse(value, out var id))
-                throw new DomainUnauthorizedException("User is not authenticated or missing a valid ID.");
+            if (string.IsNullOrWhiteSpace(value) || !Guid.TryParse(value, out var id))
+                throw new DomainUnauthorizedException("Invalid or missing user identity claim.");
 
             return id;
+        }
+
+        private string GetCallerEmail()
+        {
+            var value = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrWhiteSpace(value))
+                throw new DomainUnauthorizedException("Invalid or missing user email claim.");
+
+            return value;
         }
 
         // GET /api/users
@@ -45,11 +56,7 @@ namespace API.Controllers
         [Authorize]
         public async Task<ActionResult<ApiResponse<UserProfileDto>>> GetMyProfile(CancellationToken ct)
         {
-            var authUserId = GetCallerAuthUserId();
-
-            var query = new GetUserByEmailQuery(
-                HttpContext.Request.Headers["X-User-Email"].FirstOrDefault()
-                ?? throw new DomainUnauthorizedException("Missing X-User-Email header."));
+            var query = new GetUserByEmailQuery(GetCallerEmail());
 
             var result = await mediator.Send(query, ct);
             return Success(result, "Profile retrieved successfully.");
@@ -103,6 +110,19 @@ namespace API.Controllers
             var command = new DeleteUserCommand(authUserId);
             await mediator.Send(command, ct);
             return Success("User deleted successfully.");
+        }
+
+        [HttpPut("me/avatar")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponse<string>>> UpdateUserAvatar(
+            [FromBody] UpdateAvatarDto updateAvatarDto,
+            CancellationToken ct)
+        {
+            var authUserId = GetCallerAuthUserId();
+
+            var command = new UpdateUserAvatarCommand(authUserId, updateAvatarDto.AvatarUrl);
+            await mediator.Send(command, ct);
+            return Success("Avatar updated successfully.");
         }
     }
 }

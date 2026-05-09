@@ -31,7 +31,7 @@ namespace Domain.Entities
             UserRole role)
         {
             AuthUserId = authUserId;
-            string Email = email;
+            Email = email;
             FirstName = firstName;
             LastName = lastName;
             Role = role;
@@ -65,6 +65,11 @@ namespace Domain.Entities
         public void UpdateEmail(string email)
         {
             Email = email;
+        }
+
+        public void UpdateAvatar(string avatarUrl)
+        {
+            AvatarUrl = avatarUrl;
         }
 
         public void Deactivate()
