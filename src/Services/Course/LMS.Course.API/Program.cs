@@ -1,4 +1,3 @@
-using AutoMapper;
 using LMS.Common.Security;
 using LMS.Course.Application.Abstractions;
 using LMS.Course.Application.Contracts;
@@ -7,10 +6,9 @@ using LMS.Course.Application.Services;
 using LMS.Course.Infrastructure.Data;
 using LMS.Course.Infrastructure.Data.ImplementContracts;
 using LMS.Course.Infrastructure.EventBus;
-using LMS.EventBus.Abstractions;
 using LMS.EventBus.Extensions;
-using LMS.EventBus.Kafka;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 namespace LMS.Course.API
 {
@@ -20,13 +18,36 @@ namespace LMS.Course.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
 
             #region ToBuildSwaggerUI
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter your JWT token here"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+            });
             #endregion
 
             builder.Services.AddDbContext<CourseAppDbContext>(optionBuilder =>
@@ -43,6 +64,7 @@ namespace LMS.Course.API
             builder.Services.AddScoped<ICourseRepository, CourseRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ICourseService, CourseService>();
+            builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
 
             // register EventBus (kafka)
             builder.Services.AddEventBus(builder.Configuration);
@@ -50,9 +72,18 @@ namespace LMS.Course.API
             //builder.Services.AddScoped<IEventBus, KafkaEventBus>();
 
             builder.Services.AddControllers();
-            
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
             var app = builder.Build();
+            app.UseCors("AllowAll");
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -69,7 +100,6 @@ namespace LMS.Course.API
             app.UseStaticFiles();
 
             app.UseRouting();
-
             // ==========================================
             // Endpoints Mapping
             // ==========================================

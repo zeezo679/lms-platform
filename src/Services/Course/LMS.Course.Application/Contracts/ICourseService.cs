@@ -38,5 +38,7 @@ namespace LMS.Course.Application.Contracts
         Task<Result> RemoveLessonAsync(Guid courseId, Guid sectionId, Guid lessonId, 
             Guid requestingInstructorId, CancellationToken ct = default);
 
+        // Submission commands
+        Task<Result<Guid>> SubmitLessonAsync(Guid lessonId, Guid studentId, string fileUrl, CancellationToken ct = default);
     }
 }

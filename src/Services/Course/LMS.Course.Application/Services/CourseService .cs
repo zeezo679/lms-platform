@@ -18,12 +18,14 @@ namespace LMS.Course.Application.Services
     public class CourseService: ICourseService
     {
         private readonly ICourseRepository _repository;
+        private readonly ISubmissionRepository _submissionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEventPublisher _eventPublisher;
         private readonly IMapper _mapper;
 
         public CourseService(
             ICourseRepository repository,
+            ISubmissionRepository submissionRepository,
             IUnitOfWork unitOfWork,
             IEventPublisher eventPublisher,
             IMapper mapper)
@@ -31,6 +33,7 @@ namespace LMS.Course.Application.Services
             _repository = repository;
             _unitOfWork = unitOfWork;
             _eventPublisher = eventPublisher;
+            _submissionRepository = submissionRepository;
             _mapper = mapper;
         }
 
@@ -285,6 +288,20 @@ namespace LMS.Course.Application.Services
             await _unitOfWork.SaveChangesAsync(ct);
 
             return Result.Success();
+        }
+
+        // Submission commands
+        public async Task<Result<Guid>> SubmitLessonAsync(Guid lessonId, Guid studentId, string fileUrl, CancellationToken ct = default)
+        {
+            var result = Submission.Create(lessonId, studentId, fileUrl);
+
+            if (result.IsFailure)
+                return Result<Guid>.Failure(result.Error);
+
+            await _submissionRepository.AddAsync(result.value, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+
+            return Result<Guid>.Success(result.value.Id);
         }
     }
 }

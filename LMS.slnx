@@ -16,9 +16,9 @@
     <Project Path="src/Services/Auth/LMS.Auth.API/LMS.Auth.API.csproj" />
   </Folder>
   <Folder Name="/src/Services/Course/">
-    <Project Path="src/Services/Course/LMS.Course.Domain/LMS.Course.Domain.csproj" Id="13496a83-7a42-4934-b315-49432fde3868" />
     <Project Path="src/Services/Course/LMS.Course.API/LMS.Course.API.csproj" />
     <Project Path="src/Services/Course/LMS.Course.Application/LMS.Course.Application.csproj" Id="149bab58-ed07-40c6-82c5-7018414f1bd7" />
+    <Project Path="src/Services/Course/LMS.Course.Domain/LMS.Course.Domain.csproj" Id="13496a83-7a42-4934-b315-49432fde3868" />
     <Project Path="src/Services/Course/LMS.Course.Infrastructure/LMS.Course.Infrastructure.csproj" Id="255acae7-c63e-438a-adbe-82baa8c831a3" />
   </Folder>
   <Folder Name="/src/Services/Enrollment/">
@@ -29,8 +29,14 @@
   </Folder>
   <Folder Name="/src/Services/Upload/">
     <Project Path="src/Services/Upload/LMS.Upload.API/LMS.Upload.API.csproj" />
+    <Project Path="src/Services/Upload/LMS.Upload.Application/LMS.Upload.Application.csproj" />
+    <Project Path="src/Services/Upload/LMS.Upload.Domain/LMS.Upload.Domain.csproj" />
+    <Project Path="src/Services/Upload/LMS.Upload.Infrastructure/LMS.Upload.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Services/User/">
-    <Project Path="src/Services/User/LMS.User.API/LMS.User.API.csproj" />
+    <Project Path="src/Services/User/API/API.csproj" Id="c455dc5f-9ea8-4a8f-ba18-3f62a2b248b7" />
+    <Project Path="src/Services/User/Application/Application.csproj" Id="a6f4c7a6-d85b-4029-96b7-23740d99c832" />
+    <Project Path="src/Services/User/Domain/Domain.csproj" Id="d9b2e398-5d4e-487a-86a2-8fb646eae575" />
+    <Project Path="src/Services/User/Infrastructure/Infrastructure.csproj" Id="0321cc2c-a806-412d-bf1c-712d870f7b1a" />
   </Folder>
 </Solution>
