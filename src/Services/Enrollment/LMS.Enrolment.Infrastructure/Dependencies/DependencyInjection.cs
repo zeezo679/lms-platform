@@ -22,5 +22,6 @@ namespace LMS.Enrollment.Infrastructure.Dependencies
 
             return services;
         }
+        
     }
 }

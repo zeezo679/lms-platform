@@ -16,6 +16,8 @@ services:
       - enrollment-service
       - upload-service
       - user-service
+    networks:
+      - lms-network
 
   kafka:
     image: confluentinc/cp-kafka:7.6.0
@@ -37,17 +39,27 @@ services:
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     volumes:
       - kafka-data:/var/lib/kafka/data
+    networks:
+      - lms-network
 
   lms_sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sql_server
     ports:
-      - "1433:1433"
+      - "1434:1433"
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: ${SA_Password}
     volumes:
       - sqlserver-data:/var/opt/mssql
+    networks:
+      - lms-network
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${SA_Password}", "-Q", "SELECT 1", "-No"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -59,6 +71,8 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
     depends_on:
       - kafka
+    networks:
+      - lms-network
 
   auth-service:
     build:
@@ -72,13 +86,18 @@ services:
       - Jwt__Key=${JWT_KEY}
       - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__Audience=${JWT_AUDIENCE}
-      - ConnectionStrings__constr=${AUTH_DB_CONNECTION}
       - ConnectionStrings__DefaultConnection=${AUTH_DB_CONNECTION}
       - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
       - Kafka__GroupId=lms-auth-service
     depends_on:
-      - lms_sqlserver
-      - kafka
+      lms_sqlserver:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - lms-network
+    
+    
 
   course-service:
     build:
@@ -90,12 +109,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__constr=${COURSE_DB_CONNECTION}
-      - ConnectionStrings__DefaultConnection=${COURSE_DB_CONNECTION}
       - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
       - Kafka__GroupId=lms-course-service
     depends_on:
-      - lms_sqlserver
-      - kafka
+      lms_sqlserver:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - lms-network
 
   enrollment-service:
     build:
@@ -110,8 +132,12 @@ services:
       - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
       - Kafka__GroupId=enrollment-service-group
     depends_on:
-      - lms_sqlserver
-      - kafka
+      lms_sqlserver:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - lms-network
 
   upload-service:
     build:
@@ -129,9 +155,13 @@ services:
       - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
       - Kafka__GroupId=lms-upload-service
     depends_on:
-      - lms_sqlserver
-      - kafka
-    
+      lms_sqlserver:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - lms-network
+
   user-service:
     build:
       context: .
@@ -141,13 +171,21 @@ services:
       - "5005:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=${USER_DB_CONNECTION}
+      - ConnectionStrings__constr=${USER_DB_CONNECTION}
       - Kafka__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
       - Kafka__GroupId=lms-user-service
     depends_on:
-      - lms_sqlserver
-      - kafka
+      lms_sqlserver:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - lms-network
 
 volumes:
   kafka-data:
   sqlserver-data:
+
+networks:
+  lms-network:
+    driver: bridge

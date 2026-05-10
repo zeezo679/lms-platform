@@ -107,10 +107,10 @@ public class KafkaConsumerService : IHostedService, IDisposable
     {
         var messageValue = consumeResult.Message.Value;
 
-        var envelop = JsonSerializer.Deserialize<EventEnvelope>(messageValue);
-        if (envelop is null) return;
+        // var envelop = JsonSerializer.Deserialize<EventEnvelope>(messageValue);
+        // if (envelop is null) return;
 
-        var eventName = envelop.EventType;
+        var eventName = consumeResult.Topic;
 
         // Step 2 — check if anyone handles this event
         if (!_subsManager.HasSubscriptionsForEvent(eventName))
