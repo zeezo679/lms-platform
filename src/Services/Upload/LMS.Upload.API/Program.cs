@@ -2,7 +2,9 @@ using LMS.Common.Extensions;
 using LMS.Common.Security;
 using LMS.EventBus.Extensions;
 using LMS.Upload.Application.Commands.UploadFile;
+using LMS.Upload.Infrastructure.Data;
 using LMS.Upload.Infrastructure.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,6 +70,23 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// --- START OF MIGRATION BLOCK ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var db = services.GetRequiredService<UploadDbContext>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+// --- END OF MIGRATION BLOCK ---
 
 app.UseCors("AllowAll");
 
