@@ -107,9 +107,6 @@ public class KafkaConsumerService : IHostedService, IDisposable
     {
         var messageValue = consumeResult.Message.Value;
 
-        // var envelop = JsonSerializer.Deserialize<EventEnvelope>(messageValue);
-        // if (envelop is null) return;
-
         var eventName = consumeResult.Topic;
 
         // Step 2 — check if anyone handles this event
@@ -149,5 +146,3 @@ public class KafkaConsumerService : IHostedService, IDisposable
         _consumer.Dispose();
     }
 }
-
-internal record EventEnvelope(string EventType);

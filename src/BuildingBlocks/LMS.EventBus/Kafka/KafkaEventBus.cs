@@ -25,7 +25,8 @@ public class KafkaEventBus : IEventBus
     {
         _logger.LogInformation("Publishing event {EventName} with id {EventId}", typeof(T).Name, @event.EventId);
 
-        var topic = _subsManager.GetEventKey<T>();
+        var topic = _subsManager.GetEventKey<T>(); //event name as topic name
+        
         var key = @event.EventId.ToString();
         var value = JsonSerializer.Serialize(@event);
 
