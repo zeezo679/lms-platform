@@ -1,41 +1,132 @@
-var builder = WebApplication.CreateBuilder(args);
+using LMS.Common.Security;
+using LMS.Course.Application.Abstractions;
+using LMS.Course.Application.Contracts;
+using LMS.Course.Application.Mapping;
+using LMS.Course.Application.Services;
+using LMS.Course.Infrastructure.Data;
+using LMS.Course.Infrastructure.Data.ImplementContracts;
+using LMS.Course.Infrastructure.EventBus;
+using LMS.EventBus.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+namespace LMS.Course.API
 {
-    app.MapOpenApi();
+    public class Program
+    {
+        public static async Task Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+
+
+            #region ToBuildSwaggerUI
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter your JWT token here"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+            });
+            #endregion
+
+            builder.Services.AddDbContext<CourseAppDbContext>(optionBuilder =>
+            {
+                optionBuilder.UseSqlServer(builder.Configuration.GetConnectionString("constr"));
+            });
+
+            builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(CourseProfile).Assembly));
+
+            //Authentication and Authorization
+            builder.Services.AddGatewayAuthentication();
+
+            builder.Services.AddScoped<IEventPublisher, EventPublisherAdapter>();
+            builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<ICourseService, CourseService>();
+            builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+
+            // register EventBus (kafka)
+            builder.Services.AddEventBus(builder.Configuration);
+
+            //builder.Services.AddScoped<IEventBus, KafkaEventBus>();
+
+            builder.Services.AddControllers();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+            var app = builder.Build();
+
+            // --- START OF MIGRATION BLOCK ---
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var db = services.GetRequiredService<CourseAppDbContext>();
+                    db.Database.Migrate();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while migrating the database.");
+                }
+            }
+            // --- END OF MIGRATION BLOCK ---
+
+            app.UseCors("AllowAll");
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+                #region ToBuildSwaggerUI
+                app.UseSwagger();
+                app.UseSwaggerUI();
+                #endregion
+            }
+
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+            // ==========================================
+            // Endpoints Mapping
+            // ==========================================
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.MapControllers();
+
+            await app.RunAsync();
+        }
+    }
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

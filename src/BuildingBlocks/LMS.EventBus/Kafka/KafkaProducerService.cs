@@ -2,6 +2,7 @@ using System;
 using Confluent.Kafka;
 using LMS.EventBus.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LMS.EventBus.Kafka;
 
@@ -10,17 +11,17 @@ public class KafkaProducerService : IDisposable
     // thread safe, created once and reused throughout the application.
     // creating a producder is expensive (it opens a TCP connection to the Kafka broker)
     private readonly IProducer<string, string> _producer; 
-    private readonly KafkaSettings _kafkaSettings;
+    private readonly IOptions<KafkaSettings> _kafkaSettings;
     private readonly ILogger<KafkaProducerService> _logger;
 
-    public KafkaProducerService(KafkaSettings settings, ILogger<KafkaProducerService> logger)
+    public KafkaProducerService(IOptions<KafkaSettings> kafkaSettings, ILogger<KafkaProducerService> logger)
     { 
-        _kafkaSettings = settings;
+        _kafkaSettings = kafkaSettings;
         _logger = logger;
 
         var config = new ProducerConfig
         {
-            BootstrapServers = settings.BootstrapServers, // "localhost:9092"
+            BootstrapServers = _kafkaSettings.Value.BootstrapServers, // "localhost:9092"
             Acks = Acks.All, // ensure message durability
             EnableIdempotence = true, // prevent duplicates
             MessageTimeoutMs = 5000

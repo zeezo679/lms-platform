@@ -3,11 +3,13 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using LMS.EventBus.Abstractions;
 using LMS.EventBus.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LMS.EventBus.Kafka;
 
@@ -17,12 +19,12 @@ public class KafkaConsumerService : IHostedService, IDisposable
     private readonly IConsumer<string, string> _consumer;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IEventBusSubscriptionsManager _subsManager;
-    private readonly KafkaSettings _kafkaSettings;
+    private readonly IOptions<KafkaSettings> _kafkaSettings;
     private readonly ILogger<KafkaConsumerService> _logger;
     private Task _executingTask = Task.CompletedTask;
     private CancellationTokenSource _cts = new();
 
-    public KafkaConsumerService(KafkaSettings kafkaSettings, IServiceScopeFactory scopeFactory, ILogger<KafkaConsumerService> logger, IEventBusSubscriptionsManager subsManager)
+    public KafkaConsumerService(IOptions<KafkaSettings> kafkaSettings, IServiceScopeFactory scopeFactory, ILogger<KafkaConsumerService> logger, IEventBusSubscriptionsManager subsManager)
     {
         _kafkaSettings = kafkaSettings;
         _scopeFactory = scopeFactory;
@@ -31,8 +33,8 @@ public class KafkaConsumerService : IHostedService, IDisposable
 
         var config = new ConsumerConfig
         {
-            BootstrapServers = kafkaSettings.BootstrapServers,
-            GroupId = kafkaSettings.GroupId,
+            BootstrapServers = kafkaSettings.Value.BootstrapServers,
+            GroupId = kafkaSettings.Value.GroupId,
             AutoOffsetReset = AutoOffsetReset.Earliest,
             EnableAutoCommit = false // we will commit manually after processing
         };
@@ -41,18 +43,39 @@ public class KafkaConsumerService : IHostedService, IDisposable
     }
 
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var topics = _kafkaSettings.Topics; //list of topics the consumer subscribes to
-        _consumer.Subscribe(topics);
+        var config = new AdminClientConfig { BootstrapServers = _kafkaSettings.Value.BootstrapServers };
+        using var adminClient = new AdminClientBuilder(config).Build();
 
-        // start a background task to consume messages
-        _executingTask = Task.Run(
-             () => ExecuteAsync(_cts.Token), 
-             cancellationToken
-        );
+        try
+        {
+            var specs = _kafkaSettings.Value.Topics
+                .Select(t => new TopicSpecification { Name = t, NumPartitions = 1, ReplicationFactor = 1 });
 
-        return Task.CompletedTask;
+            await adminClient.CreateTopicsAsync(specs);
+        }
+        catch (CreateTopicsException ex)
+        {
+            var realErrors = ex.Results.Where(r => r.Error.Code != ErrorCode.TopicAlreadyExists).ToList();
+            if (realErrors.Any())
+            {
+                _logger.LogError(ex, "Failed to create Kafka topics: {Errors}",
+                    string.Join(", ", realErrors.Select(r => $"{r.Topic}: {r.Error.Reason}")));
+                return;
+            }
+        }
+
+        try
+        {
+            var topics = _kafkaSettings.Value.Topics;
+            _consumer.Subscribe(topics);
+            _executingTask = Task.Run(() => ExecuteAsync(_cts.Token), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "KafkaConsumerService failed to start. Check BootstrapServers configuration.");
+        }
     }
 
     private async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -67,7 +90,7 @@ public class KafkaConsumerService : IHostedService, IDisposable
 
                 await ProcessMessageAsync(result, cancellationToken);
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 break;
             }
@@ -78,14 +101,13 @@ public class KafkaConsumerService : IHostedService, IDisposable
         }
     }
 
+    
+
     private async Task ProcessMessageAsync(ConsumeResult<string, string> consumeResult, CancellationToken cancellationToken)
     {
         var messageValue = consumeResult.Message.Value;
 
-        var envelop = JsonSerializer.Deserialize<EventEnvelope>(messageValue);
-        if (envelop is null) return;
-
-        var eventName = envelop.EventType;
+        var eventName = consumeResult.Topic;
 
         // Step 2 — check if anyone handles this event
         if (!_subsManager.HasSubscriptionsForEvent(eventName))
@@ -124,5 +146,3 @@ public class KafkaConsumerService : IHostedService, IDisposable
         _consumer.Dispose();
     }
 }
-
-internal record EventEnvelope(string EventType);

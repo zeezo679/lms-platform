@@ -21,15 +21,16 @@ public class KafkaEventBus : IEventBus
     }
 
     //produce the event to Kafka topic. the topic name is determined by the event type name
-    public Task PublishAsync<T>(T @event) where T : IIntegrationEvent
+    public Task PublishAsync<T>(T @event, CancellationToken ct = default) where T : IIntegrationEvent
     {
         _logger.LogInformation("Publishing event {EventName} with id {EventId}", typeof(T).Name, @event.EventId);
 
-        var topic = _subsManager.GetEventKey<T>();
+        var topic = _subsManager.GetEventKey<T>(); //event name as topic name
+        
         var key = @event.EventId.ToString();
         var value = JsonSerializer.Serialize(@event);
 
-        return _producerService.ProduceAsync(topic, key, value);
+        return _producerService.ProduceAsync(topic, key, value, ct);
     }
 
     public void Subscribe<T, TH>()
