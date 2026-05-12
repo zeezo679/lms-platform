@@ -1,10 +1,10 @@
 ﻿using Application.Commands.DeactivateUser;
 using Application.Commands.DeleteUser;
+using Application.Commands.GetOrCreateUser;
 using Application.Commands.UpdateUserAvatar;
 using Application.Commands.UpdateUserProfile;
 using Application.Dtos;
 using Application.Queries.GetAllUsers;
-using Application.Queries.GetUserByEmail;
 using Application.Queries.GetUserById;
 using LMS.Common.Exceptions;
 using LMS.Common.Responses;
@@ -38,6 +38,16 @@ namespace API.Controllers
             return value;
         }
 
+        private string GetCallerRole()
+        {
+            var value = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (string.IsNullOrWhiteSpace(value))
+                throw new DomainUnauthorizedException("Invalid or missing user role claim.");
+
+            return value;
+        }
+
         // GET /api/users
         [HttpGet]
         [Authorize(Roles ="Admin")]
@@ -56,9 +66,12 @@ namespace API.Controllers
         [Authorize]
         public async Task<ActionResult<ApiResponse<UserProfileDto>>> GetMyProfile(CancellationToken ct)
         {
-            var query = new GetUserByEmailQuery(GetCallerEmail());
+            var authUserId = GetCallerAuthUserId();
+            var email = GetCallerEmail();
+            var role = GetCallerRole();
 
-            var result = await mediator.Send(query, ct);
+            var command = new GetOrCreateUserCommand(authUserId, email, role);
+            var result = await mediator.Send(command, ct);
             return Success(result, "Profile retrieved successfully.");
         }
 

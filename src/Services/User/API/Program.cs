@@ -5,6 +5,7 @@ using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using LMS.Common.Extensions;
+using LMS.Common.Security;
 using LMS.Contracts.Events;
 using LMS.EventBus.Abstractions;
 using LMS.EventBus.Extensions;
@@ -67,6 +68,8 @@ namespace API
             // Application
             builder.Services.AddApplicationServices();
 
+            builder.Services.AddGatewayAuthentication();
+
             // Global Exception Handler
             builder.Services.AddGlobalExceptionHandler();
 
@@ -108,6 +111,7 @@ namespace API
             app.UseHttpsRedirection();
 
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
